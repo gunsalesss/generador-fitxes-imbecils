@@ -10,7 +10,8 @@
  * NO toca format, colors, checkboxes ni la columna "Arribat" (es deixa per
  * omplir a mà). Retorna un informe amb el detall del que ha passat.
  */
-function generaLlibreta_(barres, damm) {
+function generaLlibreta_(barres, damm, mode) {
+  var actualitzar = (mode === 'actualitzar');
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var plantilla = getSheetPerNom_(ss, CONFIG.PLANTILLA_SHEET);
   if (!plantilla) {
@@ -18,31 +19,37 @@ function generaLlibreta_(barres, damm) {
       + '" en aquest document. Revisa CONFIG.PLANTILLA_SHEET.');
   }
 
-  var informe = { creades: [], productesAfegits: {}, avisos: [] };
+  var informe = { creades: [], actualitzades: [], productesAfegits: {}, avisos: [] };
   var nomsUsats = {};
   var barres2026 = parseBarres_();
 
   barres.forEach(function (barra) {
     var nom = nomFitxa_(barra, nomsUsats);
-
-    // Substituir si ja existeix.
     var existent = ss.getSheetByName(nom);
-    if (existent) {
-      if (esProtegida_(nom)) {
-        informe.avisos.push('Salto "' + nom + '": és una pestanya protegida.');
-        return;
+    var full;
+
+    if (actualitzar && existent && !esProtegida_(nom)) {
+      // Actualitzar en el mateix full: refà les dades, preserva edicions manuals.
+      full = existent;
+      informe.actualitzades.push(nom);
+    } else {
+      // Crear de zero (esborra si ja existeix i no està protegida).
+      if (existent) {
+        if (esProtegida_(nom)) {
+          informe.avisos.push('Salto "' + nom + '": és una pestanya protegida.');
+          return;
+        }
+        ss.deleteSheet(existent);
       }
-      ss.deleteSheet(existent);
+      full = plantilla.copyTo(ss);
+      full.setName(nom);
+      full.showSheet();
+      ss.setActiveSheet(full);
+      ss.moveActiveSheet(ss.getNumSheets());
+      informe.creades.push(nom);
     }
 
-    var full = plantilla.copyTo(ss);
-    full.setName(nom);
-    full.showSheet();
-    ss.setActiveSheet(full);
-    ss.moveActiveSheet(ss.getNumSheets());
-
     omplePlantilla_(full, barra, informe, damm, barres2026);
-    informe.creades.push(nom);
   });
 
   return informe;

@@ -5,8 +5,10 @@ partir de la **comanda de CODIBA**, perquè deixi d'haver-hi dues fonts de
 veritat i la llibreta no quedi mai desactualitzada.
 
 Funciona com a **Google Apps Script** dins del propi Google Sheets: afegeix un
-menú **🍺 Imbècils → Generar fitxes des de CODIBA**. Qualsevol col·laborador
-amb accés al full hi pot clicar. No cal cap servidor ni cap web.
+menú **🍺 Imbècils** amb **Generar fitxes** (crea de zero) i **Actualitzar
+fitxes** (refà les dades de les existents sense esborrar-les, preservant el que
+s'ha omplert a mà com la columna "Arribat"). Qualsevol col·laborador amb accés
+al full hi pot clicar. No cal cap servidor ni cap web.
 
 ---
 

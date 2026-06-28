@@ -37,6 +37,8 @@
   </style>
 </head>
 <body>
+  <input type="hidden" id="mode" value="<?= mode ?>">
+
   <div id="form">
     <h3>1. Link de la comanda CODIBA</h3>
     <div class="sub">Enganxa l'enllaç del document de comanda. Es recordarà per a la pròxima vegada.</div>
@@ -57,7 +59,7 @@
       <div class="msg" id="msgGen"></div>
       <div class="actions">
         <button onclick="google.script.host.close()">Cancel·lar</button>
-        <button class="primary" id="btnGenera" onclick="generar()">Generar</button>
+        <button class="primary" id="btnGenera" onclick="generar()"><?= mode === 'actualitzar' ? 'Actualitzar' : 'Generar' ?></button>
       </div>
     </div>
   </div>
@@ -133,7 +135,8 @@
         .executaGeneracio(
           document.getElementById('url').value.trim(),
           document.getElementById('urlDamm').value.trim(),
-          sel);
+          sel,
+          document.getElementById('mode').value);
     }
 
     function mostraResultat(text) {

@@ -303,6 +303,13 @@ check(ctx.mateixResponsable_('Sergi', 'Marina') === false, 'responsable: "Sergi"
 check(ctx.mateixResponsable_('ADRIA', '') === true, 'responsable: si un és buit, no es compara');
 check((informe.avisos || []).some(a => /Responsable diferent/.test(a)), 'avisa si el responsable de CODIBA i Barres 2026 difereixen');
 
+console.log('\n== Actualització (mode actualitzar) ==');
+const nFullsAbans = creats.length;
+const informe2 = ctx.generaLlibreta_(parsed.barres, damm, 'actualitzar');
+check(informe2.actualitzades.length === 2, 'actualitza 2 fitxes existents en el mateix full');
+check(informe2.creades.length === 0, 'no crea fitxes noves (ja existien)');
+check(creats.length === nFullsAbans, 'no s\'han clonat fulls nous en actualitzar');
+
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);
 process.exit(fail ? 1 : 0);

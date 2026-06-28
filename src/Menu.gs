@@ -9,8 +9,8 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes', 'generarFitxes')
+    .addItem('Actualitzar fitxes', 'actualitzarFitxes')
     .addSeparator()
-    .addItem('🔧 Diagnòstic pestanya (temporal)', 'diagnosticPestanya')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }
@@ -30,12 +30,20 @@ function obtenirUrlCodiba_(ui) {
   return url || '';
 }
 
-/** Botó principal: obre el diàleg (link + selecció de colles). */
-function generarFitxes() {
-  var html = HtmlService.createHtmlOutputFromFile('Dialog')
-    .setWidth(380).setHeight(540);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Generar fitxes');
+/** Obre el diàleg (link + selecció de colles) en mode generar o actualitzar. */
+function obreDialeg_(mode, titol) {
+  var t = HtmlService.createTemplateFromFile('Dialog');
+  t.mode = mode;
+  var html = t.evaluate().setWidth(380).setHeight(540);
+  SpreadsheetApp.getUi().showModalDialog(html, titol);
 }
+
+/** Generar: crea les fitxes de zero (esborra i regenera les existents). */
+function generarFitxes() { obreDialeg_('generar', 'Generar fitxes'); }
+
+/** Actualitzar: refà les dades de les fitxes existents sense esborrar-les
+ *  (preserva edicions manuals com la columna "Arribat"); crea les que faltin. */
+function actualitzarFitxes() { obreDialeg_('actualitzar', 'Actualitzar fitxes'); }
 
 /** Últim link de comanda usat en aquest document (o el del Config, o buit). */
 function linkRecordat() {
@@ -69,7 +77,7 @@ function carregaColles(url) {
  * Cridada des del diàleg (google.script.run). Parseja amb les colles triades,
  * genera les fitxes i retorna el text de l'informe per mostrar al diàleg.
  */
-function executaGeneracio(url, dammUrl, collesSeleccionades) {
+function executaGeneracio(url, dammUrl, collesSeleccionades, mode) {
   var props = PropertiesService.getDocumentProperties();
   props.setProperty(PROP_CODIBA_URL_, (url || '').trim());
   var parsed = parseCodiba_(url, collesSeleccionades);
@@ -91,15 +99,21 @@ function executaGeneracio(url, dammUrl, collesSeleccionades) {
     damm = parseDamm_(dammUrl);
   }
 
-  var informe = generaLlibreta_(parsed.barres, damm);
+  var informe = generaLlibreta_(parsed.barres, damm, mode);
   return textInforme_(parsed, informe);
 }
 
 /** Construeix el text de l'informe (parseig + generació). */
 function textInforme_(parsed, informe) {
   var linies = [];
-  linies.push('✅ Fitxes generades: ' + informe.creades.length);
-  if (informe.creades.length) linies.push('   ' + informe.creades.join(', '));
+  if (informe.creades.length) {
+    linies.push('✅ Fitxes creades: ' + informe.creades.length);
+    linies.push('   ' + informe.creades.join(', '));
+  }
+  if (informe.actualitzades && informe.actualitzades.length) {
+    linies.push('🔄 Fitxes actualitzades: ' + informe.actualitzades.length);
+    linies.push('   ' + informe.actualitzades.join(', '));
+  }
 
   var afegits = Object.keys(informe.productesAfegits);
   if (afegits.length) {
@@ -355,11 +369,13 @@ function diagnosticPestanya() {
 
 function mostraAjuda() {
   SpreadsheetApp.getUi().alert('Generador de fitxes d\'imbècils',
-    '1. Clica "Generar fitxes".\n'
-    + '2. Tria al diàleg quines colles vols generar (Blancs, Blaus, Conjunta...).\n'
-    + '3. Clica Generar. Es crearà una fitxa per barra clonant la plantilla.\n\n'
-    + 'Què NO toca: format, checkboxes ni la columna "Arribat" (per omplir a mà).\n\n'
-    + 'Si algun producte surt com a "no mapejat", afegeix-lo a la configuració '
-    + '(fitxer Config) i torna a generar.',
+    'GENERAR FITXES: crea les fitxes de zero. Si una fitxa ja existeix, '
+    + 's\'esborra i es torna a crear (es perd el que hi haguessis escrit a mà).\n\n'
+    + 'ACTUALITZAR FITXES: refà les dades (begudes, material, hores, grups...) de '
+    + 'les fitxes que ja existeixen SENSE esborrar-les, així es conserva el que has '
+    + 'omplert a mà (columna "Arribat", checklists...). Les que faltin, les crea.\n\n'
+    + 'Tots dos: enganxes el link de CODIBA (i opcionalment el de DAMM), tries '
+    + 'les colles i endavant.\n\n'
+    + 'Si un producte surt com a "afegit" o hi ha avisos, mira l\'informe final.',
     SpreadsheetApp.getUi().ButtonSet.OK);
 }

@@ -36,6 +36,15 @@ function generarFitxes() {
       return;
     }
 
+    // Seguretat: no escriure MAI dins de la pròpia comanda de CODIBA.
+    if (parsed.origenId === SpreadsheetApp.getActiveSpreadsheet().getId()) {
+      ui.alert('Atenció',
+        'Aquest document és la pròpia comanda de CODIBA. L\'script ha d\'estar '
+        + 'instal·lat dins de la Llibreta d\'imbècils, no dins de la comanda.\n\n'
+        + 'No s\'ha tocat res.', ui.ButtonSet.OK);
+      return;
+    }
+
     // 3) Confirmar abans d'escriure (és destructiu: regenera fitxes existents).
     var ok = ui.alert('Generar fitxes',
       'He detectat ' + parsed.barres.length + ' barres a la comanda.\n\n'

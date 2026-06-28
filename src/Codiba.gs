@@ -84,7 +84,7 @@ function parseCodiba_(urlOId) {
     return { header: header, productes: productes, colIndex: c };
   });
 
-  return { barres: barres, avisos: avisos };
+  return { barres: barres, avisos: avisos, origenId: ss.getId() };
 }
 
 /* ---- helpers locals ---- */

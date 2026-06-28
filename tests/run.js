@@ -65,6 +65,7 @@ const CODIBA_VALUES = [
   ['PRODUCTE INVENTAT XYZ',    3,  0],
 ];
 const CODIBA_SS = {
+  getId: () => 'CODIBA_ID',
   getSheetByName: (n) => n === 'COMANDA CODIBA' ? makeSheet('COMANDA CODIBA', CODIBA_VALUES) : null,
   getSheets: () => [makeSheet('COMANDA CODIBA', CODIBA_VALUES)],
 };
@@ -115,6 +116,7 @@ console.log('\n== Generació + emparellament de begudes ==');
 const creats = [];
 const plantilla = makeSheet('Plantilla Barra', plantillaValues());
 ACTIVE_SS = {
+  getId: () => 'LLIBRETA_ID',
   _sheets: [plantilla],
   getSheetByName(n) { return this._sheets.find(s => s._name === n) || null; },
   getSheets() { return this._sheets; },

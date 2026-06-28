@@ -22,6 +22,11 @@ function makeSheet(name, values) {
     getDataRange() { return { getValues: () => this._values }; },
     getRange(r, c, nr, nc) {
       const self = this;
+      if (typeof r === 'string') { // A1, p.ex. "S4"
+        const m = r.match(/^([A-Z]+)(\d+)$/);
+        let col = 0; for (const ch of m[1]) col = col * 26 + (ch.charCodeAt(0) - 64);
+        c = col; r = parseInt(m[2], 10);
+      }
       return {
         setValue(v) { self._writes.push({ r, c, v }); },
         clearContent() { self._writes.push({ r, c, v: '' }); },
@@ -68,6 +73,7 @@ const CODIBA_VALUES = [
   ['PACK 6 COCA COLA 2L ZERO', 20, 12, 6],
   ['WHISKY JB 1L',             12, 8,  6],
   ['PRODUCTE INVENTAT XYZ',    3,  0,  0],
+  ['GEL 20KG',                 8,  0,  5],
 ];
 const CODIBA_SS = {
   getId: () => 'CODIBA_ID',
@@ -115,7 +121,7 @@ const b0 = parsed.barres[0];
 check(b0.header.lloc === 'PORXADA', 'barra 0 lloc = PORXADA');
 check(b0.header.responsable === 'ADRIA', 'barra 0 responsable = ADRIA');
 check(String(b0.header.gasos) === '12', 'barra 0 gasos = 12');
-check(b0.productes.length === 5, 'barra 0 té 5 productes amb quantitat (>0)');
+check(b0.productes.length === 6, 'barra 0 té 6 productes amb quantitat (>0)');
 const b1 = parsed.barres[1];
 check(b1.header.lloc === 'FESTA INICI', 'barra 1 lloc = FESTA INICI');
 check(b1.productes.find(p => /XYZ/.test(p.nom)) === undefined, 'producte amb qty 0 s\'omet');
@@ -170,6 +176,8 @@ check(w.some(x => x.v === 'ADRIA' && x.r === 6 && x.c === 4), 'responsable (nom)
 check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telefon escrit a E16 (offset +3)');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
+check(w.some(x => x.v === '8 (15:00)' && x.r === 4 && x.c === 19), 'gel -> S4 = "8 (15:00)" (quantitat + hora entrega)');
+check(!w.some(x => x.v === 'GEL 20KG'), 'el gel NO s\'afegeix a la taula Beguda');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
 check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');
 check(w.some(x => x.v === 3 && x.r === 14 && x.c === 13), 'beguda no a plantilla -> quantitat afegida al final');
@@ -177,6 +185,7 @@ check(fitxa0._copies.some(c => c.opts && c.opts.formatOnly && c.r === 13 && c.c 
   'fila afegida copia el format de l\'última fila de la taula');
 const w1 = creats[1]._writes;
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la comanda -> cel·la Gasos buidada (FESTA INICI)');
+check(w1.some(x => x.v === '' && x.r === 4 && x.c === 19), 'sense gel a la comanda -> S4 buidada (FESTA INICI)');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

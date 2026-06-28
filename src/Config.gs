@@ -107,6 +107,14 @@ const CONFIG = {
     { etiqueta: 'Satèl·lit', offsetCol: 3 }  // telèfon satèl·lit (E17)
   ],
 
+  // --- Gel: va a la taula Material, no a la de begudes ---------------------
+  // Els productes de la comanda que continguin aquest text es tracten com a
+  // gel: la seva quantitat (sumada) va a la cel·la CEL_GEL amb la hora
+  // d'entrega entre parèntesis -> "8 (15:00)". I NO surten a la taula Beguda.
+  // Deixa CEL_GEL buit ('') per desactivar aquest tractament especial.
+  PRODUCTE_GEL_CONTE: 'GEL',
+  CEL_GEL: 'S4',
+
   // Capçaleres de les taules dins la plantilla (per localitzar-les soles).
   PLANTILLA_TAULA_BEGUDA:  'Beguda',   // capçalera de la columna de noms
   PLANTILLA_TAULA_MATERIAL:'Material', // capçalera de la taula de material

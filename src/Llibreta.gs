@@ -94,6 +94,31 @@ function omplePlantilla_(full, barra, informe) {
 
   // --- 3) Gasos a la taula Material ---
   ompleGasos_(full, values, barra, informe);
+
+  // --- 4) Gel a la taula Material (cel·la fixa) ---
+  ompleGel_(full, barra);
+}
+
+/** Un producte és "gel" si el seu nom conté el text configurat. */
+function esGel_(nom) {
+  if (!CONFIG.CEL_GEL) return false;
+  var t = norm_(CONFIG.PRODUCTE_GEL_CONTE || '');
+  return t !== '' && norm_(nom).indexOf(t) !== -1;
+}
+
+/**
+ * Escriu el gel a la cel·la CEL_GEL com a "quantitat (hora d'entrega)".
+ * Suma les quantitats de tots els productes de gel. Si no n'hi ha, buida la
+ * cel·la (treu l'exemple de la plantilla).
+ */
+function ompleGel_(full, barra) {
+  if (!CONFIG.CEL_GEL) return;
+  var cel = full.getRange(CONFIG.CEL_GEL);
+  var gels = barra.productes.filter(function (p) { return esGel_(p.nom); });
+  if (!gels.length) { cel.clearContent(); return; }
+  var qty = gels.reduce(function (s, p) { return s + (Number(p.qty) || 0); }, 0);
+  var hora = barra.header.horaEntrega;
+  cel.setValue(hora ? (qty + ' (' + hora + ')') : qty);
 }
 
 /**
@@ -143,6 +168,7 @@ function ompleTaulaBeguda_(full, values, barra, informe) {
   var ampladaTaula = dretaTaula - colNoms + 1;
 
   barra.productes.forEach(function (p) {
+    if (esGel_(p.nom)) return; // el gel va a la taula Material, no aquí
     var key = clauProducte_(p.nom);
     var row = filesPlantilla[key];
     if (row === undefined) {

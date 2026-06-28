@@ -80,6 +80,7 @@ const CODIBA_VALUES = [
   ['TELÈFON',     '627743675',  '608112356', '664419506'],
   ['GASOS',       12,           '',           6],
   ['Hora gel',    new Date(1899, 11, 30, 17, 0), '', new Date(1899, 11, 30, 13, 30)],
+  ['HORA RECOLLIDA', '04:00', '', '03:00'],
   ['BARRIL ESTRELLA DAMM 30L', 45, 25, 14],
   ['CAIXA 35 AIGUA VERI 33CL', 15, 6,  4],
   ['PACK 6 COCA COLA 2L ZERO', 20, 12, 6],
@@ -140,6 +141,7 @@ function plantillaValues() {
     ['', 'Arribada material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Recollida material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Recollida beguda', 'EXEMPLE', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['', 'Grup 1', '', 'Elefant blanc', '', '', '', '', '', '', '', '', '', '', '', ''],
   ];
 }
 
@@ -243,7 +245,8 @@ check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) segue
 check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 3), 'DAMM: hora entrega "16h" a Arribada material');
 check(w.some(x => x.v === '4.00h' && x.r === 15 && x.c === 3), 'DAMM: hora recollida "4.00h" a Recollida material');
 check(w.some(x => x.v === '15:00' && x.r === 5 && x.c === 3), 'Arribada beguda = HORA ENTREGA "15:00"');
-check(w.some(x => x.v === '' && x.r === 16 && x.c === 3), 'Recollida beguda sense font -> buida');
+check(w.some(x => x.v === '04:00' && x.r === 16 && x.c === 3), 'Recollida beguda = HORA RECOLLIDA "04:00"');
+check(w.some(x => x.v === '' && x.r === 17 && x.c === 4), 'Grup 1 buit per defecte (treu "Elefant blanc")');
 check(!w.some(x => x.v === 'GEL 20KG'), 'el gel NO s\'afegeix a la taula Beguda');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
 check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');

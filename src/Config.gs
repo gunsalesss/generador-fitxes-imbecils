@@ -62,7 +62,8 @@ const CONFIG = {
     responsable:  'RESPONSABLE',
     telefon:      'TELEFON|TELÈFON',
     gasos:        'GASOS',
-    horaGel:      'HORA GEL'
+    horaGel:      'HORA GEL',
+    horaRecollida: 'HORA RECOLLIDA'
   },
 
   // --- Filtre per COLLA ----------------------------------------------------
@@ -114,7 +115,8 @@ const CONFIG = {
     // "Resp. Imbecils" està a B16 (fusionada B:C). El nom va a D16 (+2) i el
     // telèfon a E16 (+3).
     responsable: { etiqueta: 'Resp. Imbecils', offsetCol: 2 },
-    telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 3 }
+    telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 3 },
+    horaRecollida: { etiqueta: 'Recollida beguda', offsetCol: 1 }
   },
 
   // Cel·les que s'han de BUIDAR a cada fitxa (dades d'exemple de la plantilla
@@ -126,7 +128,9 @@ const CONFIG = {
     { etiqueta: 'Arribada material', offsetCol: 1 },  // s'omple del DAMM si n'hi ha
     { etiqueta: 'Recollida material', offsetCol: 1 }, // s'omple del DAMM si n'hi ha
     { etiqueta: 'Arribada beguda', offsetCol: 1 },    // s'omple de l'HORA ENTREGA
-    { etiqueta: 'Recollida beguda', offsetCol: 1 }    // sense font: sempre buit
+    { etiqueta: 'Recollida beguda', offsetCol: 1 },   // s'omple de l'HORA RECOLLIDA
+    { etiqueta: 'Grup 1', offsetCol: 1 },             // treu l'exemple ("Elefant blanc")
+    { etiqueta: 'Grup 1', offsetCol: 2 }
   ],
 
   // --- Gel: va a la taula Material, no a la de begudes ---------------------

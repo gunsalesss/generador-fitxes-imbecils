@@ -10,6 +10,7 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes', 'generarFitxes')
     .addSeparator()
+    .addItem('🔧 Diagnòstic DAMM match (temporal)', 'diagnosticDammMatch')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }
@@ -277,6 +278,41 @@ function diagnosticPlantilla() {
     'He bolcat la zona esquerra de la plantilla a "_DIAG_PLANTILLA" amb les '
     + 'lletres de columna i números de fila. Passa-me\'n una captura.',
     ui.ButtonSet.OK);
+}
+
+/**
+ * Diagnòstic temporal: mostra què extreu del DAMM i com casa cada barra
+ * (plaça resolta + dia + dades trobades). Usa els links recordats.
+ */
+function diagnosticDammMatch() {
+  var ui = SpreadsheetApp.getUi();
+  var url = linkRecordat();
+  var dammUrl = linkDammRecordat();
+  if (!url || !dammUrl) {
+    ui.alert('Falten links. Genera un cop amb CODIBA i DAMM perquè es recordin.');
+    return;
+  }
+  var parsed = parseCodiba_(url, getCollesDisponibles_(url));
+  var damm = parseDamm_(dammUrl);
+
+  var linies = [];
+  linies.push('DAMM places (' + damm.placesNorm.length + '): ' + damm.placesNorm.join(' | '));
+  linies.push('DAMM dies: ' + damm.dies.join(', '));
+  linies.push('');
+  parsed.barres.slice(0, 8).forEach(function (b) {
+    var diaNum = parseInt(diaDelMes_(b.header.data), 10);
+    var res = resolPlaceDamm_(b.header.lloc, damm.placesNorm);
+    var d = (res.place && damm.mapa[res.place + '|' + diaNum]) || null;
+    linies.push('LLOC "' + b.header.lloc + '" (data ' + b.header.data + ' -> dia ' + diaNum + ')');
+    linies.push('  resol: ' + res.estat + (res.place ? ' -> ' + res.place : '')
+      + (res.opcions ? ' [' + res.opcions.join(', ') + ']' : ''));
+    linies.push('  dades: ' + (d
+      ? ('M=' + d.mostradors + ' T=' + d.tiradors + ' N=' + d.neveres
+         + ' entrega=' + d.entrega + ' recollida=' + d.recollida)
+      : '(cap per aquest dia)'));
+  });
+
+  ui.alert('Diagnòstic DAMM match', linies.join('\n'), ui.ButtonSet.OK);
 }
 
 function mostraAjuda() {

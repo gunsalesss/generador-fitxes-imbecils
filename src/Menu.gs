@@ -8,7 +8,7 @@
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('🍺 Imbècils')
-    .addItem('Generar fitxes des de CODIBA', 'generarFitxes')
+    .addItem('Generar fitxes', 'generarFitxes')
     .addSeparator()
     .addItem('🔧 Diagnòstic DAMM (temporal)', 'diagnosticDamm')
     .addItem('Ajuda', 'mostraAjuda')
@@ -243,7 +243,7 @@ function diagnosticDamm() {
 
 function mostraAjuda() {
   SpreadsheetApp.getUi().alert('Generador de fitxes d\'imbècils',
-    '1. Clica "Generar fitxes des de CODIBA".\n'
+    '1. Clica "Generar fitxes".\n'
     + '2. Tria al diàleg quines colles vols generar (Blancs, Blaus, Conjunta...).\n'
     + '3. Clica Generar. Es crearà una fitxa per barra clonant la plantilla.\n\n'
     + 'Què NO toca: format, checkboxes ni la columna "Arribat" (per omplir a mà).\n\n'

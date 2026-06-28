@@ -18,7 +18,7 @@ function generaLlibreta_(barres) {
       + '" en aquest document. Revisa CONFIG.PLANTILLA_SHEET.');
   }
 
-  var informe = { creades: [], productesNoMapejats: {}, avisos: [] };
+  var informe = { creades: [], productesAfegits: {}, avisos: [] };
   var nomsUsats = {};
 
   barres.forEach(function (barra) {
@@ -121,12 +121,18 @@ function ompleTaulaBeguda_(full, values, barra, informe) {
   // ve a la comanda (o no es mapeja), surt en blanc i no s'arrossega la
   // quantitat d'exemple de la plantilla.
   var filesPlantilla = {}; // normProducte -> rowIndex
+  var ultimaFila = capBeguda.row;
   for (var r = capBeguda.row + 1; r < values.length; r++) {
     var nom = cellText_(values, r, colNoms);
     if (nom === '') continue;
     filesPlantilla[normProducte_(nom)] = r;
+    ultimaFila = r;
     full.getRange(r + 1, colDemanat + 1).clearContent();
   }
+
+  // Files extra (sota la taula) per a begudes de la comanda que no són a la
+  // plantilla: s'hi afegeixen perquè no es perdi cap quantitat.
+  var filaExtra = ultimaFila + 1;
 
   barra.productes.forEach(function (p) {
     var key = clauProducte_(p.nom);
@@ -136,7 +142,11 @@ function ompleTaulaBeguda_(full, values, barra, informe) {
       row = trobaPerInclusio_(filesPlantilla, key);
     }
     if (row === undefined) {
-      informe.productesNoMapejats[p.nom] = (informe.productesNoMapejats[p.nom] || 0) + 1;
+      // No és a la plantilla: l'afegim al final de la taula Beguda.
+      full.getRange(filaExtra + 1, colNoms + 1).setValue(p.nom);
+      full.getRange(filaExtra + 1, colDemanat + 1).setValue(p.qty);
+      filaExtra++;
+      informe.productesAfegits[p.nom] = true;
       return;
     }
     full.getRange(row + 1, colDemanat + 1).setValue(p.qty);

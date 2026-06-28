@@ -151,7 +151,7 @@ plantilla.copyTo = function () {
 
 const informe = ctx.generaLlibreta_(parsed.barres);
 check(informe.creades.length === 2, 'genera 2 fitxes');
-check(!!informe.productesNoMapejats['PRODUCTE INVENTAT XYZ'], 'XYZ es reporta com a no-mapejat (no es descarta en silenci)');
+check(!!informe.productesAfegits['PRODUCTE INVENTAT XYZ'], 'XYZ es marca com a afegit (no eren a la plantilla)');
 
 // Comprovar escriptures a la primera fitxa creada.
 const fitxa0 = creats[0];
@@ -169,6 +169,8 @@ check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telef
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
+check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');
+check(w.some(x => x.v === 3 && x.r === 14 && x.c === 13), 'beguda no a plantilla -> quantitat afegida al final');
 const w1 = creats[1]._writes;
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la comanda -> cel·la Gasos buidada (FESTA INICI)');
 

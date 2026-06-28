@@ -85,13 +85,14 @@ function textInforme_(parsed, informe) {
   linies.push('✅ Fitxes generades: ' + informe.creades.length);
   if (informe.creades.length) linies.push('   ' + informe.creades.join(', '));
 
-  var noMap = Object.keys(informe.productesNoMapejats);
-  if (noMap.length) {
+  var afegits = Object.keys(informe.productesAfegits);
+  if (afegits.length) {
     linies.push('');
-    linies.push('⚠️ Productes NO mapejats (' + noMap.length + '):');
-    noMap.forEach(function (n) { linies.push('   • ' + n); });
+    linies.push('➕ Begudes afegides (no eren a la plantilla) (' + afegits.length + '):');
+    afegits.forEach(function (n) { linies.push('   • ' + n); });
     linies.push('');
-    linies.push('→ Afegeix-los a CONFIG.SINONIMS_PRODUCTES i torna a generar.');
+    linies.push('→ S\'han posat al final de la taula Beguda. Si vols que tinguin '
+      + 'el format de la taula, afegeix-les a la plantilla o a SINONIMS_PRODUCTES.');
   }
 
   var avisos = (parsed.avisos || []).concat(informe.avisos || []);
@@ -101,7 +102,7 @@ function textInforme_(parsed, informe) {
     avisos.forEach(function (a) { linies.push('   • ' + a); });
   }
 
-  if (!noMap.length && !avisos.length) {
+  if (!afegits.length && !avisos.length) {
     linies.push('');
     linies.push('Tot correcte, sense incidències. 🎉');
   }

@@ -85,17 +85,6 @@ function entregaAplicable_(P, dia) {
   return best === null ? '' : P.ent[best];
 }
 
-/** Recollida aplicable al dia D: la del dia >= D més proper. */
-function recollidaAplicable_(P, dia) {
-  if (P.rec[dia]) return P.rec[dia];
-  var best = null;
-  Object.keys(P.rec).forEach(function (d) {
-    d = Number(d);
-    if (d >= dia && (best === null || d < best)) best = d;
-  });
-  return best === null ? '' : P.rec[best];
-}
-
 /**
  * Resol la plaça d'una barra (LLOC de CODIBA) cap a la plaça del DAMM.
  * Prioritat: equivalència explícita -> exacta -> per inclusió. Si la inclusió

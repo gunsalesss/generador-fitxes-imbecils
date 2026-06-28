@@ -21,6 +21,23 @@ const CONFIG = {
   // Nom de la pestanya dins de CODIBA que conté la comanda principal.
   CODIBA_SHEET: 'COMANDA CODIBA',
 
+  // --- Fase 2: Planning DAMM (mostradors, tiradors, neveres + hores) -------
+  // Nom de la pestanya del planning ('' = la primera del document).
+  DAMM_SHEET: '',
+  // Equivalència entre la plaça de la comanda (LLOC) i la del DAMM. Clau = el
+  // LLOC tal com surt a CODIBA; valor = el nom de la plaça al DAMM. Només cal
+  // per als casos que no s'endevinen sols (p. ex. "PORXADA" -> quina de les
+  // dues). La resta es resol per coincidència aproximada; el que no quadri
+  // surt avisat a l'informe.
+  DAMM_EQUIV: {
+    // 'PORXADA': 'PORXADA (GRAN)',
+  },
+  // Quines columnes (M/T/N) del DAMM van a quina columna de la taula Material.
+  DAMM_MATERIAL: { M: 'Mostradors', T: 'Tiradors', N: 'Neveres' },
+  // Etiquetes de la fitxa on van les hores del DAMM (esquerra de la fitxa).
+  PLANTILLA_ARRIBADA_MATERIAL:  'Arribada material',
+  PLANTILLA_RECOLLIDA_MATERIAL: 'Recollida material',
+
   // --- Document de DESTÍ: la Llibreta d'imbècils ---------------------------
   // Per defecte s'escriu a la MATEIXA Llibreta on viu aquest script.
   // El nom de la pestanya plantilla que es clona per cada barra:

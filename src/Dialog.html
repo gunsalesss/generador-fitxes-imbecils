@@ -47,7 +47,11 @@
     <div class="msg" id="msgLink"></div>
 
     <div id="seccioColles">
-      <h3 style="margin-top:16px">2. Quines colles vols generar?</h3>
+      <h3 style="margin-top:16px">2. Planning DAMM (opcional)</h3>
+      <div class="sub">Link del Planning DAMM per omplir mostradors/tiradors/neveres i hores. Deixa-ho buit per no tocar-ho.</div>
+      <input type="text" id="urlDamm" placeholder="https://docs.google.com/spreadsheets/d/...">
+
+      <h3 style="margin-top:16px">3. Quines colles vols generar?</h3>
       <div class="sub">Es crearà/regenerarà una fitxa per barra de les colles marcades. Les pestanyes protegides no es toquen.</div>
       <div id="llistaColles"></div>
       <div class="msg" id="msgGen"></div>
@@ -64,10 +68,13 @@
   </div>
 
   <script>
-    // Prefill amb l'últim link usat.
+    // Prefill amb els últims links usats.
     google.script.run.withSuccessHandler(function (url) {
       if (url) document.getElementById('url').value = url;
     }).linkRecordat();
+    google.script.run.withSuccessHandler(function (url) {
+      if (url) document.getElementById('urlDamm').value = url;
+    }).linkDammRecordat();
 
     function setMsg(id, text, isErr) {
       var el = document.getElementById(id);
@@ -123,7 +130,10 @@
       google.script.run
         .withSuccessHandler(function (text) { mostraResultat(text); })
         .withFailureHandler(function (err) { mostraResultat('❌ Error:\n' + err.message); })
-        .executaGeneracio(document.getElementById('url').value.trim(), sel);
+        .executaGeneracio(
+          document.getElementById('url').value.trim(),
+          document.getElementById('urlDamm').value.trim(),
+          sel);
     }
 
     function mostraResultat(text) {

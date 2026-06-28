@@ -87,10 +87,11 @@ Tot el que es pot necessitar tocar és a [`src/Config.gs`](src/Config.gs):
 
 ## Estat
 
-- ✅ **Fase 1** — CODIBA → fitxes de la Llibreta (begudes, gasos, dades de barra).
-- ⏳ **Fase 2** — Integrar el **Planning DAMM** (mostradors, tiradors, neveres,
-  hores d'entrega/recollida). Pendent d'un export real del Planning per fer el
-  parseig. Veure [`src/Damm.gs`](src/Damm.gs).
+- ✅ **Fase 1** — CODIBA → fitxes de la Llibreta (begudes, gasos, gel, dades de barra).
+- ✅ **Fase 2** — Planning DAMM: omple **mostradors/tiradors/neveres** a la taula
+  Material i les **hores d'entrega/recollida** (Arribada/Recollida material),
+  emparellant per plaça (taula d'equivalències `DAMM_EQUIV`) i dia (número del
+  dia). El link del DAMM s'introdueix al diàleg (opcional). Veure [`src/Damm.gs`](src/Damm.gs).
 
 ---
 

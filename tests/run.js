@@ -47,8 +47,8 @@ function deepCopy(v) { return JSON.parse(JSON.stringify(v)); }
 
 let ACTIVE_SS = null;
 const SpreadsheetApp = {
-  openByUrl: () => CODIBA_SS,
-  openById: () => CODIBA_SS,
+  openByUrl: (u) => /damm/i.test(u) ? DAMM_SS : CODIBA_SS,
+  openById: (u) => /damm/i.test(u) ? DAMM_SS : CODIBA_SS,
   getActiveSpreadsheet: () => ACTIVE_SS,
 };
 const Utilities = {
@@ -63,7 +63,7 @@ const Session = { getScriptTimeZone: () => 'Europe/Madrid' };
 /* ---- Carregar el codi de src ---- */
 const ctx = { SpreadsheetApp, Utilities, Session, console, JSON, Math, Number, String, Object, Date, isNaN };
 vm.createContext(ctx);
-['Config.gs', 'Util.gs', 'Codiba.gs', 'Llibreta.gs'].forEach(f => {
+['Config.gs', 'Util.gs', 'Codiba.gs', 'Damm.gs', 'Llibreta.gs'].forEach(f => {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
   vm.runInContext(code, ctx, { filename: f });
 });
@@ -101,6 +101,26 @@ const CODIBA_SS = {
   getSheets: () => [makeSheet('COMANDA CODIBA', CODIBA_VALUES, CODIBA_DISPLAY)],
 };
 
+/* ---- Mock del Planning DAMM ---- */
+const DAMM_DISPLAY = [
+  ['', 'DV21', '', '', 'DS22', '', '', 'DG23', '', '', 'DLL24', '', ''],
+  ['', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N'],
+  ['PORXADA', '', '', '', '', '', '', '16h', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '12', '7', '10', '', '', ''],
+  ['', '', '', '', '', '', '', '4.00h', '', '', '', '', ''],
+];
+const DAMM_VALUES = [
+  ['', 'DV21', '', '', 'DS22', '', '', 'DG23', '', '', 'DLL24', '', ''],
+  ['', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N'],
+  ['PORXADA', '', '', '', '', '', '', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', 12, 7, 10, '', '', ''],
+  ['', '', '', '', '', '', '', '', '', '', '', '', ''],
+];
+const DAMM_SS = {
+  getSheets: () => [makeSheet('Planning', DAMM_VALUES, DAMM_DISPLAY)],
+  getSheetByName: () => makeSheet('Planning', DAMM_VALUES, DAMM_DISPLAY),
+};
+
 /* ---- Mock de la plantilla de la Llibreta ---- */
 function plantillaValues() {
   return [
@@ -117,6 +137,8 @@ function plantillaValues() {
     ['', '', '', '', '', '', '', '', '', '', '', 'PACK 6 COCA COLA 2L', '', '', '', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'WHISKY JB', '', '', '', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'FANTA TARONJA', 99, '', '', ''],
+    ['', 'Arribada material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['', 'Recollida material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
   ];
 }
 
@@ -157,6 +179,18 @@ check(nomesBlaus.barres.length === 1 && nomesBlaus.barres[0].header.lloc === 'MA
 const triades = ctx.parseCodiba_('https://fake', ['BLANCS', 'BLAUS']);
 check(triades.barres.length === 2, 'override colles=[BLANCS,BLAUS] -> 2 barres');
 
+console.log('\n== Parseig DAMM ==');
+const dammP = ctx.parseDamm_('https://docs.google.com/spreadsheets/d/DAMM/edit');
+check(dammP.placesNorm.indexOf('PORXADA') !== -1, 'detecta la plaça PORXADA');
+check(dammP.dies.indexOf(23) !== -1, 'detecta el dia 23 (DG23)');
+const cel = dammP.mapa['PORXADA|23'];
+check(cel && cel.mostradors === 12 && cel.tiradors === 7 && cel.neveres === 10, 'PORXADA dia 23: M/T/N = 12/7/10');
+check(cel && cel.entrega === '16h' && cel.recollida === '4.00h', 'PORXADA dia 23: entrega 16h, recollida 4.00h');
+const resOk = ctx.resolPlaceDamm_('PORXADA', dammP.placesNorm);
+check(resOk.estat === 'ok' && resOk.place === 'PORXADA', 'resol PORXADA -> ok');
+const resNo = ctx.resolPlaceDamm_('LLOC INEXISTENT', dammP.placesNorm);
+check(resNo.estat === 'no-trobat', 'plaça inexistent -> no-trobat');
+
 console.log('\n== Generació + emparellament de begudes ==');
 // Stub d'Active Spreadsheet amb plantilla i recollida de fulls creats.
 const creats = [];
@@ -178,7 +212,8 @@ plantilla.copyTo = function () {
   return nou;
 };
 
-const informe = ctx.generaLlibreta_(parsed.barres);
+const damm = ctx.parseDamm_('https://docs.google.com/spreadsheets/d/DAMM/edit');
+const informe = ctx.generaLlibreta_(parsed.barres, damm);
 check(informe.creades.length === 2, 'genera 2 fitxes');
 check(informe.creades[0] === 'Dissabte 23 PORXADA', 'nom de pestanya: <dia> <dia_mes> <plaça> ("Dissabte 23 PORXADA")');
 check(informe.creades[1] === 'Diumenge 24 FESTA INICI', 'segona fitxa: "Diumenge 24 FESTA INICI"');
@@ -200,10 +235,12 @@ check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telef
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
 check(w.some(x => x.v === '8 (15:00)' && x.r === 2 && x.c === 17), 'gel -> Demanat/Gel = "8 (15:00)" (quantitat + Hora gel, valor exacte del display)');
-check(w.some(x => x.v === '' && x.r === 2 && x.c === 13), 'Mostradors es buida (ve de DAMM)');
-check(w.some(x => x.v === '' && x.r === 2 && x.c === 14), 'Tiradors es buida (ve de DAMM)');
-check(w.some(x => x.v === '' && x.r === 2 && x.c === 15), 'Neveres es buida (ve de DAMM)');
-check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) es buida (ve de DAMM)');
+check(w.some(x => x.v === 12 && x.r === 2 && x.c === 13), 'DAMM: Mostradors=12 a PORXADA (dia 23)');
+check(w.some(x => x.v === 7 && x.r === 2 && x.c === 14), 'DAMM: Tiradors=7 a PORXADA (dia 23)');
+check(w.some(x => x.v === 10 && x.r === 2 && x.c === 15), 'DAMM: Neveres=10 a PORXADA (dia 23)');
+check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) segueix buit (no ve de DAMM)');
+check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 3), 'DAMM: hora entrega "16h" a Arribada material');
+check(w.some(x => x.v === '4.00h' && x.r === 15 && x.c === 3), 'DAMM: hora recollida "4.00h" a Recollida material');
 check(!w.some(x => x.v === 'GEL 20KG'), 'el gel NO s\'afegeix a la taula Beguda');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
 check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');
@@ -213,6 +250,8 @@ check(fitxa0._copies.some(c => c.opts && c.opts.formatOnly && c.r === 13 && c.c 
 const w1 = creats[1]._writes;
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la comanda -> cel·la Gasos buidada (FESTA INICI)');
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 17), 'sense gel a la comanda -> cel·la Gel buidada (FESTA INICI)');
+check(w1.some(x => x.v === '' && x.r === 2 && x.c === 13), 'plaça no trobada al DAMM -> Mostradors queda buit (FESTA INICI)');
+check((informe.avisos || []).some(a => /DAMM.*FESTA INICI/.test(a)), 'avisa que la plaça FESTA INICI no és al DAMM');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

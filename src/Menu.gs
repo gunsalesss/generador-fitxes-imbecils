@@ -16,6 +16,7 @@ function onOpen() {
 }
 
 var PROP_CODIBA_URL_ = 'CODIBA_URL';
+var PROP_DAMM_URL_ = 'DAMM_URL';
 
 /** Obté el link de la comanda (del Config o demanant-lo). '' si es cancel·la. */
 function obtenirUrlCodiba_(ui) {
@@ -32,7 +33,7 @@ function obtenirUrlCodiba_(ui) {
 /** Botó principal: obre el diàleg (link + selecció de colles). */
 function generarFitxes() {
   var html = HtmlService.createHtmlOutputFromFile('Dialog')
-    .setWidth(380).setHeight(440);
+    .setWidth(380).setHeight(540);
   SpreadsheetApp.getUi().showModalDialog(html, 'Generar fitxes');
 }
 
@@ -40,6 +41,11 @@ function generarFitxes() {
 function linkRecordat() {
   var p = PropertiesService.getDocumentProperties().getProperty(PROP_CODIBA_URL_);
   return p || CONFIG.CODIBA_URL || '';
+}
+
+/** Últim link del Planning DAMM usat en aquest document. */
+function linkDammRecordat() {
+  return PropertiesService.getDocumentProperties().getProperty(PROP_DAMM_URL_) || '';
 }
 
 /**
@@ -63,8 +69,9 @@ function carregaColles(url) {
  * Cridada des del diàleg (google.script.run). Parseja amb les colles triades,
  * genera les fitxes i retorna el text de l'informe per mostrar al diàleg.
  */
-function executaGeneracio(url, collesSeleccionades) {
-  PropertiesService.getDocumentProperties().setProperty(PROP_CODIBA_URL_, (url || '').trim());
+function executaGeneracio(url, dammUrl, collesSeleccionades) {
+  var props = PropertiesService.getDocumentProperties();
+  props.setProperty(PROP_CODIBA_URL_, (url || '').trim());
   var parsed = parseCodiba_(url, collesSeleccionades);
 
   // Seguretat: no escriure MAI dins de la pròpia comanda de CODIBA.
@@ -76,7 +83,15 @@ function executaGeneracio(url, collesSeleccionades) {
     return 'No hi ha cap barra per a les colles triades. No s\'ha generat res.';
   }
 
-  var informe = generaLlibreta_(parsed.barres);
+  // Planning DAMM (opcional).
+  var damm = null;
+  dammUrl = (dammUrl || '').trim();
+  if (dammUrl) {
+    props.setProperty(PROP_DAMM_URL_, dammUrl);
+    damm = parseDamm_(dammUrl);
+  }
+
+  var informe = generaLlibreta_(parsed.barres, damm);
   return textInforme_(parsed, informe);
 }
 

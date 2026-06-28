@@ -10,7 +10,7 @@
  * NO toca format, colors, checkboxes ni la columna "Arribat" (es deixa per
  * omplir a mà). Retorna un informe amb el detall del que ha passat.
  */
-function generaLlibreta_(barres) {
+function generaLlibreta_(barres, damm) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var plantilla = getSheetPerNom_(ss, CONFIG.PLANTILLA_SHEET);
   if (!plantilla) {
@@ -40,7 +40,7 @@ function generaLlibreta_(barres) {
     ss.setActiveSheet(full);
     ss.moveActiveSheet(ss.getNumSheets());
 
-    omplePlantilla_(full, barra, informe);
+    omplePlantilla_(full, barra, informe, damm);
     informe.creades.push(nom);
   });
 
@@ -84,7 +84,7 @@ function esProtegida_(nom) {
 }
 
 /** Omple una fitxa ja clonada amb les dades d'una barra. */
-function omplePlantilla_(full, barra, informe) {
+function omplePlantilla_(full, barra, informe, damm) {
   var values = full.getDataRange().getValues();
 
   // --- 1) Camps solts (per etiqueta + offset) ---
@@ -119,6 +119,58 @@ function omplePlantilla_(full, barra, informe) {
 
   // --- 4) Gel a la taula Material (columna "Gel (h)", fila Demanat) ---
   ompleGel_(full, values, barra);
+
+  // --- 5) Material DAMM (mostradors/tiradors/neveres + hores) ---
+  if (damm) ompleDamm_(full, values, barra, damm, informe);
+}
+
+/**
+ * Omple, des del Planning DAMM, les columnes M/T/N de la taula Material i les
+ * hores d'Arribada/Recollida material, emparellant per plaça + dia.
+ */
+function ompleDamm_(full, values, barra, damm, informe) {
+  var diaNum = parseInt(diaDelMes_(barra.header.data), 10);
+  var res = resolPlaceDamm_(barra.header.lloc, damm.placesNorm);
+  if (res.estat !== 'ok') {
+    var detall = res.estat === 'ambigu'
+      ? 'coincideix amb ' + res.opcions.join(' / ') + ' (afegeix-la a DAMM_EQUIV)'
+      : 'no s\'ha trobat al DAMM';
+    informe.avisos.push('DAMM: la plaça "' + barra.header.lloc + '" ' + detall + '.');
+    return;
+  }
+
+  var dades = damm.mapa[res.place + '|' + diaNum] || {};
+
+  // Quantitats M/T/N a la fila Demanat de la taula Material.
+  var capMaterial = trobaEtiqueta_(values, CONFIG.PLANTILLA_TAULA_MATERIAL);
+  if (capMaterial) {
+    var filaDemanat = filaDemanatMaterial_(values, capMaterial);
+    if (filaDemanat !== -1) {
+      var clau = { M: 'mostradors', T: 'tiradors', N: 'neveres' };
+      Object.keys(CONFIG.DAMM_MATERIAL).forEach(function (mtn) {
+        var header = CONFIG.DAMM_MATERIAL[mtn];
+        var c = trobaColumnaEnFila_(values, capMaterial.row, header);
+        if (c === -1) return;
+        var val = dades[clau[mtn]];
+        var cel = full.getRange(filaDemanat + 1, c + 1);
+        if (val === null || val === undefined) cel.clearContent();
+        else cel.setValue(val);
+      });
+    }
+  }
+
+  // Hores a Arribada / Recollida material (esquerra de la fitxa).
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, dades.entrega);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, dades.recollida);
+}
+
+/** Escriu un valor a la dreta d'una etiqueta, o la buida si no n'hi ha. */
+function escriuOBuida_(full, values, etiqueta, valor) {
+  var pos = trobaEtiqueta_(values, etiqueta);
+  if (!pos) return;
+  var cel = full.getRange(pos.row + 1, pos.col + 2);
+  if (valor) cel.setValue(valor);
+  else cel.clearContent();
 }
 
 /** Localitza la fila "Demanat" dins la taula Material. -1 si no hi és. */

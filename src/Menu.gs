@@ -10,7 +10,6 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes des de CODIBA', 'generarFitxes')
     .addSeparator()
-    .addItem('🔍 Diagnòstic responsable', 'diagnosticResp')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }

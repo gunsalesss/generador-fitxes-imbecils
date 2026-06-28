@@ -41,6 +41,12 @@ const CONFIG = {
   // hi ha hora d'entrega/recollida aplicable. Deixa '' per buidar-ho.
   MATERIAL_SENSE_HORA: 'No',
 
+  // --- Pestanya "Barres 2026" (dins la Llibreta): horari i grups -----------
+  BARRES_SHEET: 'Barres 2026',
+  PLANTILLA_HORARI: 'Horari',  // a la fitxa, valor a +1 (fila de dalt)
+  PLANTILLA_GRUP1:  'Grup 1',  // valor a +2 (caixa esquerra)
+  PLANTILLA_GRUP2:  'Grup 2',  // valor a +2
+
   // --- Document de DESTÍ: la Llibreta d'imbècils ---------------------------
   // Per defecte s'escriu a la MATEIXA Llibreta on viu aquest script.
   // El nom de la pestanya plantilla que es clona per cada barra:
@@ -132,7 +138,9 @@ const CONFIG = {
     { etiqueta: 'Recollida material', offsetCol: 2 }, // s'omple del DAMM si n'hi ha
     { etiqueta: 'Arribada beguda', offsetCol: 2 },    // s'omple de l'HORA ENTREGA
     { etiqueta: 'Recollida beguda', offsetCol: 2 },   // s'omple de l'HORA RECOLLIDA
-    { etiqueta: 'Grup 1', offsetCol: 2 }              // treu l'exemple ("Elefant blanc")
+    { etiqueta: 'Grup 1', offsetCol: 2 },             // s'omple de Barres 2026
+    { etiqueta: 'Grup 2', offsetCol: 2 },             // s'omple de Barres 2026
+    { etiqueta: 'Horari', offsetCol: 1 }              // s'omple de Barres 2026 (Durada)
   ],
 
   // --- Gel: va a la taula Material, no a la de begudes ---------------------

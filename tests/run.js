@@ -63,7 +63,7 @@ const Session = { getScriptTimeZone: () => 'Europe/Madrid' };
 /* ---- Carregar el codi de src ---- */
 const ctx = { SpreadsheetApp, Utilities, Session, console, JSON, Math, Number, String, Object, Date, isNaN };
 vm.createContext(ctx);
-['Config.gs', 'Util.gs', 'Codiba.gs', 'Damm.gs', 'Llibreta.gs'].forEach(f => {
+['Config.gs', 'Util.gs', 'Codiba.gs', 'Damm.gs', 'Barres.gs', 'Llibreta.gs'].forEach(f => {
   const code = fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
   vm.runInContext(code, ctx, { filename: f });
 });
@@ -124,6 +124,15 @@ const DAMM_SS = {
   getSheetByName: () => makeSheet('Planning', DAMM_VALUES, DAMM_DISPLAY),
 };
 
+/* ---- Mock de la pestanya "Barres 2026" ---- */
+const BARRES_DISPLAY = [
+  ['Relació Barres/Grups', '', '', '', '', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', '', '', ''],
+  ['DIUMENGE 23 D\'AGOST', 'BARRES', 'TIPUS BARRA', 'GRUP/S', '', 'Nº PAX.', 'BOLO', 'Respo BM', 'Responsable', 'Satèl·lits', 'Durada'],
+  ['', 'PORXADA', 'Fixa', 'Salsa Blanca', 'Junta', '7', 'Concert', '', 'Adri', 'Sergi', '23:00 - 03:00'],
+  ['', 'PORXADA', 'Fixa', 'Other', '', '', 'Bingo', '', 'X', 'Y', '11:00 - 14:00'],
+];
+
 /* ---- Mock de la plantilla de la Llibreta ---- */
 function plantillaValues() {
   return [
@@ -144,6 +153,8 @@ function plantillaValues() {
     ['', 'Recollida material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Recollida beguda', '', 'EXEMPLE', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Grup 1', '', 'Elefant blanc', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['', 'Grup 2', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['', 'Horari', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
   ];
 }
 
@@ -212,9 +223,10 @@ console.log('\n== Generació + emparellament de begudes ==');
 // Stub d'Active Spreadsheet amb plantilla i recollida de fulls creats.
 const creats = [];
 const plantilla = makeSheet('Plantilla Barra', plantillaValues());
+const barresSheet = makeSheet('Barres 2026', BARRES_DISPLAY, BARRES_DISPLAY);
 ACTIVE_SS = {
   getId: () => 'LLIBRETA_ID',
-  _sheets: [plantilla],
+  _sheets: [plantilla, barresSheet],
   getSheetByName(n) { return this._sheets.find(s => s._name === n) || null; },
   getSheets() { return this._sheets; },
   getNumSheets() { return this._sheets.length; },
@@ -275,6 +287,16 @@ check(w1.some(x => x.v === '' && x.r === 2 && x.c === 13), 'plaça no trobada al
 check((informe.avisos || []).some(a => /DAMM.*FESTA INICI/.test(a)), 'avisa que la plaça FESTA INICI no és al DAMM');
 check(w1.some(x => x.v === '' && x.r === 14 && x.c === 4), 'sense DAMM per la plaça -> Arribada material buida (FESTA INICI)');
 check(!w1.some(x => x.v && x.r === 14 && x.c === 4), 'Arribada material no s\'omple si no hi ha dada DAMM (FESTA INICI)');
+
+console.log('\n== Barres 2026 ==');
+const barresP = ctx.parseBarres_();
+check(barresP && barresP.length === 2, 'parseBarres_ llegeix 2 files');
+const rb = ctx.resolBarres_(b0, barresP);
+check(rb.estat === 'ok' && rb.row.durada === '23:00 - 03:00', 'resol PORXADA dia 23 acte Concert -> fila correcta (desempat per BOLO)');
+check(rb.row.grup1 === 'Salsa Blanca' && rb.row.grup2 === 'Junta', 'grups correctes');
+check(w.some(x => x.v === '23:00 - 03:00' && x.r === 19 && x.c === 3), 'Barres: Horari (Durada) a la fitxa');
+check(w.some(x => x.v === 'Salsa Blanca' && x.r === 17 && x.c === 4), 'Barres: Grup 1 a la fitxa');
+check(w.some(x => x.v === 'Junta' && x.r === 18 && x.c === 4), 'Barres: Grup 2 a la fitxa');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

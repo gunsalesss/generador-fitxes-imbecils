@@ -20,6 +20,7 @@ function generaLlibreta_(barres, damm) {
 
   var informe = { creades: [], productesAfegits: {}, avisos: [] };
   var nomsUsats = {};
+  var barres2026 = parseBarres_();
 
   barres.forEach(function (barra) {
     var nom = nomFitxa_(barra, nomsUsats);
@@ -40,7 +41,7 @@ function generaLlibreta_(barres, damm) {
     ss.setActiveSheet(full);
     ss.moveActiveSheet(ss.getNumSheets());
 
-    omplePlantilla_(full, barra, informe, damm);
+    omplePlantilla_(full, barra, informe, damm, barres2026);
     informe.creades.push(nom);
   });
 
@@ -84,7 +85,7 @@ function esProtegida_(nom) {
 }
 
 /** Omple una fitxa ja clonada amb les dades d'una barra. */
-function omplePlantilla_(full, barra, informe, damm) {
+function omplePlantilla_(full, barra, informe, damm, barres2026) {
   var values = full.getDataRange().getValues();
 
   // --- 1) Buidar cel·les amb dades d'exemple ABANS d'omplir, perquè el que no
@@ -123,6 +124,25 @@ function omplePlantilla_(full, barra, informe, damm) {
 
   // --- 5) Material DAMM (mostradors/tiradors/neveres + hores) ---
   if (damm) ompleDamm_(full, values, barra, damm, informe);
+
+  // --- 6) Barres 2026: Horari + Grup 1 + Grup 2 ---
+  if (barres2026) ompleBarres_(full, values, barra, barres2026, informe);
+}
+
+/** Omple Horari i Grups des de la pestanya Barres 2026. */
+function ompleBarres_(full, values, barra, barres2026, informe) {
+  var res = resolBarres_(barra, barres2026);
+  if (res.estat !== 'ok') {
+    var detall = res.estat === 'ambigu'
+      ? 'surt més d\'un cop el mateix dia (' + res.opcions.join(' ; ') + ')'
+      : 'no s\'ha trobat a Barres 2026';
+    informe.avisos.push('Barres 2026: "' + barra.header.lloc + '" (dia '
+      + diaDelMes_(barra.header.data) + ') ' + detall + '.');
+    return;
+  }
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_HORARI, res.row.durada, 1);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_GRUP1, res.row.grup1, 2);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_GRUP2, res.row.grup2, 2);
 }
 
 /**

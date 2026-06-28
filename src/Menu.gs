@@ -10,6 +10,7 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes', 'generarFitxes')
     .addSeparator()
+    .addItem('🔧 Diagnòstic plantilla (temporal)', 'diagnosticPlantilla')
     .addItem('🔧 Diagnòstic DAMM (temporal)', 'diagnosticDamm')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
@@ -238,6 +239,45 @@ function diagnosticDamm() {
     + 'He bolcat "' + sheet.getName() + '" a la pestanya "_DIAG_DAMM" '
     + '(amb lletres de columna i números de fila originals).\n\n'
     + 'Fes-me una captura o passa-me-la per mapejar l\'estructura.',
+    ui.ButtonSet.OK);
+}
+
+/**
+ * Diagnòstic temporal: bolca la zona esquerra de la plantilla (files 1-30,
+ * columnes A-K) amb les referències de cel·la, a una pestanya "_DIAG_PLANTILLA".
+ * Serveix per veure on són exactament els valors de cada etiqueta i ajustar els
+ * offsets.
+ */
+function diagnosticPlantilla() {
+  var ui = SpreadsheetApp.getUi();
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  var plantilla = getSheetPerNom_(active, CONFIG.PLANTILLA_SHEET);
+  if (!plantilla) {
+    ui.alert('No trobo la plantilla "' + CONFIG.PLANTILLA_SHEET + '".');
+    return;
+  }
+  var disp = plantilla.getDataRange().getDisplayValues();
+  var maxR = Math.min(disp.length, 30);
+  var maxC = Math.min(disp.length ? disp[0].length : 0, 11);
+
+  var data = [];
+  var cap = ['fila\\col'];
+  for (var c = 0; c < maxC; c++) cap.push(colLletra_(c));
+  data.push(cap);
+  for (var r = 0; r < maxR; r++) {
+    var fila = [String(r + 1)];
+    for (var c2 = 0; c2 < maxC; c2++) fila.push(disp[r][c2]);
+    data.push(fila);
+  }
+
+  var out = active.getSheetByName('_DIAG_PLANTILLA');
+  if (out) active.deleteSheet(out);
+  out = active.insertSheet('_DIAG_PLANTILLA');
+  out.getRange(1, 1, data.length, maxC + 1).setValues(data);
+
+  ui.alert('Diagnòstic plantilla',
+    'He bolcat la zona esquerra de la plantilla a "_DIAG_PLANTILLA" amb les '
+    + 'lletres de columna i números de fila. Passa-me\'n una captura.',
     ui.ButtonSet.OK);
 }
 

@@ -126,7 +126,7 @@ const CONFIG = {
   // Columnes de la taula Material que de moment es BUIDEN sempre, perquè la
   // seva info ve del Planning DAMM (encara no integrat). Quan es faci la
   // Fase 2, aquí s'hi ompliran les dades en lloc de buidar-les.
-  MATERIAL_DEMANAT_BUIDAR: ['Mostradors', 'Tiradors', 'Neveres'],
+  MATERIAL_DEMANAT_BUIDAR: ['Mostradors', 'Tiradors', 'Neveres', 'Tirador CST (h)'],
 
   // --- Comportament --------------------------------------------------------
   // Si una fitxa ja existeix, què fem? 'replace' = la regenera de zero.

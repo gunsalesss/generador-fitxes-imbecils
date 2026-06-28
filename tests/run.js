@@ -104,8 +104,8 @@ const CODIBA_SS = {
 /* ---- Mock de la plantilla de la Llibreta ---- */
 function plantillaValues() {
   return [
-    ['', '', '', '', '', '', '', '', '', '', '', 'Material', 'Mostradors', 'Tiradors', 'Neveres', 'Gasos', 'Gel (h)'],
-    ['', 'Bolo', '', 'Ubicació', '', '', '', '', '', '', '', 'Demanat', 12, 6, 9, ''],
+    ['', '', '', '', '', '', '', '', '', '', '', 'Material', 'Mostradors', 'Tiradors', 'Neveres', 'Gasos', 'Gel (h)', 'Tirador CST (h)'],
+    ['', 'Bolo', '', 'Ubicació', '', '', '', '', '', '', '', 'Demanat', 12, 6, 9, '', '', '1 (15:00)'],
     ['', '', '', '', '', '', '', '', '', '', '', 'Arribat', '', '', '', ''],
     ['', 'Dia', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Arribada beguda', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
@@ -201,6 +201,7 @@ check(w.some(x => x.v === '8 (15:00)' && x.r === 2 && x.c === 17), 'gel -> Deman
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 13), 'Mostradors es buida (ve de DAMM)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 14), 'Tiradors es buida (ve de DAMM)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 15), 'Neveres es buida (ve de DAMM)');
+check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) es buida (ve de DAMM)');
 check(!w.some(x => x.v === 'GEL 20KG'), 'el gel NO s\'afegeix a la taula Beguda');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
 check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');

@@ -302,14 +302,15 @@ function diagnosticDammMatch() {
   parsed.barres.slice(0, 8).forEach(function (b) {
     var diaNum = parseInt(diaDelMes_(b.header.data), 10);
     var res = resolPlaceDamm_(b.header.lloc, damm.placesNorm);
-    var d = (res.place && damm.mapa[res.place + '|' + diaNum]) || null;
+    var P = res.place ? damm.perPlaca[res.place] : null;
+    var q = (P && P.q[diaNum]) || null;
+    var ent = P ? entregaAplicable_(P, diaNum) : '';
+    var rec = P ? recollidaAplicable_(P, diaNum) : '';
     linies.push('LLOC "' + b.header.lloc + '" (data ' + b.header.data + ' -> dia ' + diaNum + ')');
     linies.push('  resol: ' + res.estat + (res.place ? ' -> ' + res.place : '')
       + (res.opcions ? ' [' + res.opcions.join(', ') + ']' : ''));
-    linies.push('  dades: ' + (d
-      ? ('M=' + d.mostradors + ' T=' + d.tiradors + ' N=' + d.neveres
-         + ' entrega=' + d.entrega + ' recollida=' + d.recollida)
-      : '(cap per aquest dia)'));
+    linies.push('  dades: ' + (q ? ('M=' + q.mostradors + ' T=' + q.tiradors + ' N=' + q.neveres) : 'sense quantitats')
+      + ' | entrega=' + ent + ' recollida=' + rec);
   });
 
   ui.alert('Diagnòstic DAMM match', linies.join('\n'), ui.ButtonSet.OK);

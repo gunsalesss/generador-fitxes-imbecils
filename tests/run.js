@@ -103,12 +103,12 @@ const CODIBA_SS = {
 };
 
 /* ---- Mock del Planning DAMM ---- */
-// Entrega (verd) el DV21; quantitats i recollida (vermell) el DG23. Així la
-// barra del dia 23 ha d'agafar l'entrega "16h" del dia 21 (carry-forward).
+// Entrega (verd) i quantitats el DG23 (dia de la barra). Recollida (vermell) el
+// DLL24 (un altre dia) -> NO ha de sortir a la fitxa del dia 23, sinó "No".
 const DAMM_DISPLAY = [
   ['', 'DV21', '', '', 'DS22', '', '', 'DG23', '', '', 'DLL24', '', ''],
   ['', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N'],
-  ['PORXADA', '16h', '', '', '', '', '', '', '', '', '', '', ''],
+  ['PORXADA', '', '', '', '', '', '', '16h', '', '', '', '', ''],
   ['', '5', '2', '1', '', '', '', '12', '7', '10', '', '', ''],
   ['', '', '', '', '', '', '', '', '', '', '4.00h', '', ''],
 ];
@@ -190,10 +190,9 @@ check(dammP.placesNorm.indexOf('PORXADA') !== -1, 'detecta la plaça PORXADA');
 check(dammP.dies.indexOf(23) !== -1, 'detecta el dia 23 (DG23)');
 const P = dammP.perPlaca['PORXADA'];
 check(P && P.q[23] && P.q[23].mostradors === 12 && P.q[23].tiradors === 7 && P.q[23].neveres === 10, 'PORXADA dia 23: M/T/N = 12/7/10');
-check(P && P.ent[21] === '16h', 'PORXADA: entrega "16h" el dia 21 (DV21)');
+check(P && P.ent[23] === '16h', 'PORXADA: entrega "16h" el dia 23 (DG23)');
 check(P && P.rec[24] === '4.00h', 'PORXADA: recollida "4.00h" el dia 24 (DLL24)');
 check(P && !P.rec[23], 'PORXADA: no hi ha recollida el dia 23');
-check(ctx.entregaAplicable_(P, 23) === '16h', 'entrega aplicable al dia 23 -> carry del 21 ("16h")');
 const resOk = ctx.resolPlaceDamm_('PORXADA', dammP, 23);
 check(resOk.estat === 'ok' && resOk.place === 'PORXADA', 'resol PORXADA -> ok');
 const resNo = ctx.resolPlaceDamm_('LLOC INEXISTENT', dammP, 23);
@@ -257,7 +256,7 @@ check(w.some(x => x.v === 12 && x.r === 2 && x.c === 13), 'DAMM: Mostradors=12 a
 check(w.some(x => x.v === 7 && x.r === 2 && x.c === 14), 'DAMM: Tiradors=7 a PORXADA (dia 23)');
 check(w.some(x => x.v === 10 && x.r === 2 && x.c === 15), 'DAMM: Neveres=10 a PORXADA (dia 23)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) segueix buit (no ve de DAMM)');
-check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 4), 'DAMM: hora entrega "16h" a Arribada material (col D)');
+check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 4), 'DAMM: entrega del dia 23 "16h" a Arribada material (dia exacte)');
 check(w.some(x => x.v === 'No' && x.r === 15 && x.c === 4), 'recollida d\'un altre dia (24) NO surt al dia 23 -> "No"');
 check(!w.some(x => x.v === '4.00h' && x.r === 15 && x.c === 4), 'la recollida del dia 24 no s\'arrossega al dia 23');
 check(w.some(x => x.v === '15:00' && x.r === 5 && x.c === 4), 'Arribada beguda = HORA ENTREGA "15:00" (col D)');

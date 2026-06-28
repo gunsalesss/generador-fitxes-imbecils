@@ -74,17 +74,6 @@ function parseDamm_(urlOId) {
   return { perPlaca: perPlaca, placesNorm: placesNorm, dies: Object.keys(dies).map(Number) };
 }
 
-/** Entrega aplicable al dia D: la del dia <= D més proper (es manté fins recollir). */
-function entregaAplicable_(P, dia) {
-  if (P.ent[dia]) return P.ent[dia];
-  var best = null;
-  Object.keys(P.ent).forEach(function (d) {
-    d = Number(d);
-    if (d <= dia && (best === null || d > best)) best = d;
-  });
-  return best === null ? '' : P.ent[best];
-}
-
 /**
  * Resol la plaça d'una barra (LLOC de CODIBA) cap a la plaça del DAMM.
  * Prioritat: equivalència explícita -> exacta -> per inclusió. Si la inclusió

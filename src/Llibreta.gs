@@ -162,11 +162,10 @@ function ompleDamm_(full, values, barra, damm, informe) {
     }
   }
 
-  // Arribada material: l'entrega del material present (entrega del dia <= D més
-  // proper). Recollida material: NOMÉS el dia real de desmuntatge (dia exacte),
-  // no s'arrossega cap enrere. Si no n'hi ha, "No" (MATERIAL_SENSE_HORA).
+  // Arribada i Recollida material: NOMÉS el dia exacte de l'entrega/recollida.
+  // Els altres dies, "No" (MATERIAL_SENSE_HORA).
   var sense = CONFIG.MATERIAL_SENSE_HORA || '';
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, entregaAplicable_(P, diaNum) || sense, 2);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, (P.ent[diaNum] || '') || sense, 2);
   escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, (P.rec[diaNum] || '') || sense, 2);
 }
 

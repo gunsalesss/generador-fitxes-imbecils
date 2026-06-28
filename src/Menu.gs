@@ -10,8 +10,6 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes', 'generarFitxes')
     .addSeparator()
-    .addItem('🔧 Diagnòstic plantilla (temporal)', 'diagnosticPlantilla')
-    .addItem('🔧 Diagnòstic DAMM (temporal)', 'diagnosticDamm')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }

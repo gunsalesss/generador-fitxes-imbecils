@@ -144,6 +144,12 @@ function ompleBarres_(full, values, barra, barres2026, informe) {
   escriuOBuida_(full, values, CONFIG.PLANTILLA_GRUP1, res.row.grup1, 2);
   escriuOBuida_(full, values, CONFIG.PLANTILLA_GRUP2, res.row.grup2, 2);
   escriuOBuida_(full, values, CONFIG.PLANTILLA_SATELLIT, res.row.satellit, 2);
+
+  // Avís si el responsable de CODIBA i el de Barres 2026 no coincideixen.
+  if (!mateixResponsable_(barra.header.responsable, res.row.responsable)) {
+    informe.avisos.push('Responsable diferent a "' + full.getName() + '": CODIBA="'
+      + barra.header.responsable + '" vs Barres 2026="' + res.row.responsable + '".');
+  }
 }
 
 /**

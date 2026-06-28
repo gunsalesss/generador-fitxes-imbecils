@@ -33,11 +33,22 @@ function parseBarres_() {
       grup1: String(disp[r][3] || '').trim(),   // col D
       grup2: String(disp[r][4] || '').trim(),   // col E
       acte: String(disp[r][6] || '').trim(),    // col G (BOLO)
+      responsable: String(disp[r][8] || '').trim(), // col I
       satellit: String(disp[r][9] || '').trim(),// col J
       durada: String(disp[r][10] || '').trim()  // col K
     });
   }
   return files;
+}
+
+/**
+ * Compara el responsable de CODIBA amb el de Barres 2026. Tolera abreviatures
+ * (un conté l'altre). Si algun és buit, no es pot comparar -> es considera OK.
+ */
+function mateixResponsable_(a, b) {
+  a = norm_(a); b = norm_(b);
+  if (!a || !b) return true;
+  return a === b || a.indexOf(b) !== -1 || b.indexOf(a) !== -1;
 }
 
 /**

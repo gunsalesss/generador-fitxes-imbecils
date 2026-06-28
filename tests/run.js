@@ -129,7 +129,7 @@ const BARRES_DISPLAY = [
   ['Relació Barres/Grups', '', '', '', '', '', '', '', '', '', ''],
   ['', '', '', '', '', '', '', '', '', '', ''],
   ['DIUMENGE 23 D\'AGOST', 'BARRES', 'TIPUS BARRA', 'GRUP/S', '', 'Nº PAX.', 'BOLO', 'Respo BM', 'Responsable', 'Satèl·lits', 'Durada'],
-  ['', 'PORXADA', 'Fixa', 'Salsa Blanca', 'Junta', '7', 'Concert', '', 'Adri', 'Sergi', '23:00 - 03:00'],
+  ['', 'PORXADA', 'Fixa', 'Salsa Blanca', 'Junta', '7', 'Concert', '', 'Marina', 'Sergi', '23:00 - 03:00'],
   ['', 'PORXADA', 'Fixa', 'Other', '', '', 'Bingo', '', 'X', 'Y', '11:00 - 14:00'],
 ];
 
@@ -298,6 +298,10 @@ check(w.some(x => x.v === '23:00 - 03:00' && x.r === 19 && x.c === 3), 'Barres: 
 check(w.some(x => x.v === 'Salsa Blanca' && x.r === 17 && x.c === 4), 'Barres: Grup 1 a la fitxa');
 check(w.some(x => x.v === 'Junta' && x.r === 18 && x.c === 4), 'Barres: Grup 2 a la fitxa');
 check(w.some(x => x.v === 'Sergi' && x.r === 7 && x.c === 4), 'Barres: Satèl·lit (col J) a la fitxa');
+check(ctx.mateixResponsable_('ADRIA', 'Adri') === true, 'responsable: "ADRIA" ~ "Adri" (abreviatura) -> coincideix');
+check(ctx.mateixResponsable_('Sergi', 'Marina') === false, 'responsable: "Sergi" vs "Marina" -> no coincideix');
+check(ctx.mateixResponsable_('ADRIA', '') === true, 'responsable: si un és buit, no es compara');
+check((informe.avisos || []).some(a => /Responsable diferent/.test(a)), 'avisa si el responsable de CODIBA i Barres 2026 difereixen');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

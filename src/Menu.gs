@@ -1,8 +1,8 @@
 /**
  * Punt d'entrada i menú dins de Google Sheets.
  *
- * En obrir la Llibreta apareix un menú "🍺 Imbècils" amb el botó per generar
- * les fitxes a partir de la comanda de CODIBA.
+ * En obrir la Llibreta apareix un menú "🍺 Imbècils". En clicar el botó
+ * principal s'obre un diàleg on l'usuari tria quines colles vol generar.
  */
 
 function onOpen() {
@@ -14,64 +14,74 @@ function onOpen() {
     .addToUi();
 }
 
-/** Botó principal: demana el link (si cal), parseja, genera i informa. */
-function generarFitxes() {
-  var ui = SpreadsheetApp.getUi();
-
-  // 1) Obtenir el link de la comanda.
+/** Obté el link de la comanda (del Config o demanant-lo). '' si es cancel·la. */
+function obtenirUrlCodiba_(ui) {
   var url = CONFIG.CODIBA_URL;
   if (!url) {
     var resp = ui.prompt('Comanda CODIBA',
       'Enganxa el link de la comanda de CODIBA:', ui.ButtonSet.OK_CANCEL);
-    if (resp.getSelectedButton() !== ui.Button.OK) return;
+    if (resp.getSelectedButton() !== ui.Button.OK) return '';
     url = resp.getResponseText().trim();
   }
-  if (!url) { ui.alert('No has posat cap link. Cancel·lat.'); return; }
-
-  try {
-    // 2) Parsejar.
-    var parsed = parseCodiba_(url);
-    if (!parsed.barres.length) {
-      ui.alert('No he detectat cap barra a la comanda. Revisa el document.');
-      return;
-    }
-
-    // Seguretat: no escriure MAI dins de la pròpia comanda de CODIBA.
-    if (parsed.origenId === SpreadsheetApp.getActiveSpreadsheet().getId()) {
-      ui.alert('Atenció',
-        'Aquest document és la pròpia comanda de CODIBA. L\'script ha d\'estar '
-        + 'instal·lat dins de la Llibreta d\'imbècils, no dins de la comanda.\n\n'
-        + 'No s\'ha tocat res.', ui.ButtonSet.OK);
-      return;
-    }
-
-    // 3) Confirmar abans d'escriure (és destructiu: regenera fitxes existents).
-    var ok = ui.alert('Generar fitxes',
-      'He detectat ' + parsed.barres.length + ' barres a la comanda.\n\n'
-      + 'Es crearan/regeneraran les seves fitxes en aquest document. '
-      + 'Les pestanyes protegides no es toquen.\n\nVols continuar?',
-      ui.ButtonSet.YES_NO);
-    if (ok !== ui.Button.YES) return;
-
-    // 4) Generar.
-    var informe = generaLlibreta_(parsed.barres);
-
-    // 5) Informe final (parseig + generació).
-    mostraInforme_(ui, parsed, informe);
-
-  } catch (e) {
-    ui.alert('Error', String(e.message || e), ui.ButtonSet.OK);
-    throw e; // queda registrat als logs d'Apps Script
-  }
+  return url || '';
 }
 
-/** Mostra un resum clar del que ha passat, inclosos els avisos. */
-function mostraInforme_(ui, parsed, informe) {
+/** Botó principal: llegeix les colles disponibles i obre el diàleg de selecció. */
+function generarFitxes() {
+  var ui = SpreadsheetApp.getUi();
+  var url = obtenirUrlCodiba_(ui);
+  if (!url) { return; }
+
+  var colles;
+  try {
+    colles = getCollesDisponibles_(url);
+  } catch (e) {
+    ui.alert('Error', String(e.message || e), ui.ButtonSet.OK);
+    return;
+  }
+  if (!colles.length) {
+    ui.alert('No he trobat cap colla a la fila COLLA de la comanda.');
+    return;
+  }
+
+  // Marca per defecte les que estiguin a CONFIG.COLLES_INCLOSES.
+  var perDefecte = (CONFIG.COLLES_INCLOSES || []).map(norm_);
+  var items = colles.map(function (c) {
+    return { nom: c, checked: perDefecte.indexOf(norm_(c)) !== -1 };
+  });
+
+  var t = HtmlService.createTemplateFromFile('Dialog');
+  t.url = url;
+  t.items = items;
+  var html = t.evaluate().setWidth(340).setHeight(60 + items.length * 34 + 110);
+  ui.showModalDialog(html, 'Generar fitxes');
+}
+
+/**
+ * Cridada des del diàleg (google.script.run). Parseja amb les colles triades,
+ * genera les fitxes i retorna el text de l'informe per mostrar al diàleg.
+ */
+function executaGeneracio(url, collesSeleccionades) {
+  var parsed = parseCodiba_(url, collesSeleccionades);
+
+  // Seguretat: no escriure MAI dins de la pròpia comanda de CODIBA.
+  if (parsed.origenId === SpreadsheetApp.getActiveSpreadsheet().getId()) {
+    throw new Error('Aquest document és la pròpia comanda de CODIBA. L\'script '
+      + 'ha d\'estar dins de la Llibreta, no de la comanda. No s\'ha tocat res.');
+  }
+  if (!parsed.barres.length) {
+    return 'No hi ha cap barra per a les colles triades. No s\'ha generat res.';
+  }
+
+  var informe = generaLlibreta_(parsed.barres);
+  return textInforme_(parsed, informe);
+}
+
+/** Construeix el text de l'informe (parseig + generació). */
+function textInforme_(parsed, informe) {
   var linies = [];
   linies.push('✅ Fitxes generades: ' + informe.creades.length);
-  if (informe.creades.length) {
-    linies.push('   ' + informe.creades.join(', '));
-  }
+  if (informe.creades.length) linies.push('   ' + informe.creades.join(', '));
 
   var noMap = Object.keys(informe.productesNoMapejats);
   if (noMap.length) {
@@ -79,8 +89,7 @@ function mostraInforme_(ui, parsed, informe) {
     linies.push('⚠️ Productes NO mapejats (' + noMap.length + '):');
     noMap.forEach(function (n) { linies.push('   • ' + n); });
     linies.push('');
-    linies.push('→ Afegeix-los a CONFIG.SINONIMS_PRODUCTES indicant a quina '
-      + 'fila de la Llibreta corresponen, i torna a generar.');
+    linies.push('→ Afegeix-los a CONFIG.SINONIMS_PRODUCTES i torna a generar.');
   }
 
   var avisos = (parsed.avisos || []).concat(informe.avisos || []);
@@ -94,15 +103,14 @@ function mostraInforme_(ui, parsed, informe) {
     linies.push('');
     linies.push('Tot correcte, sense incidències. 🎉');
   }
-
-  ui.alert('Resultat', linies.join('\n'), ui.ButtonSet.OK);
+  return linies.join('\n');
 }
 
 function mostraAjuda() {
   SpreadsheetApp.getUi().alert('Generador de fitxes d\'imbècils',
     '1. Clica "Generar fitxes des de CODIBA".\n'
-    + '2. Enganxa el link de la comanda de CODIBA.\n'
-    + '3. Confirma. Es crearà una fitxa per barra clonant la plantilla.\n\n'
+    + '2. Tria al diàleg quines colles vols generar (Blancs, Blaus, Conjunta...).\n'
+    + '3. Clica Generar. Es crearà una fitxa per barra clonant la plantilla.\n\n'
     + 'Què NO toca: format, checkboxes ni la columna "Arribat" (per omplir a mà).\n\n'
     + 'Si algun producte surt com a "no mapejat", afegeix-lo a la configuració '
     + '(fitxer Config) i torna a generar.',

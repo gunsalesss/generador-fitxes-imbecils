@@ -13,12 +13,13 @@ amb accés al full hi pot clicar. No cal cap servidor ni cap web.
 ## Què fa (Fase 1)
 
 1. Obre la comanda de CODIBA a partir del seu link.
-2. Detecta **una barra per columna** (data, lloc, responsable, telèfon, gasos…).
-3. Per cada barra **clona la pestanya `Plantilla Barra`** i hi omple:
+2. Pregunta **quines colles** vols generar (Blancs, Blaus, Conjunta…) en un diàleg.
+3. Detecta **una barra per columna** (data, lloc, responsable, telèfon, gasos…).
+4. Per cada barra **clona la pestanya `Plantilla Barra`** i hi omple:
    - Dades de capçalera (acte, ubicació, dia, responsable + telèfon, hora d'arribada de beguda).
    - La taula **Beguda** → columna **Demanat**, emparellant productes pel nom.
    - El **Gasos** a la taula Material.
-4. Mostra un **informe**: fitxes creades, productes no mapejats i avisos.
+5. Mostra un **informe**: fitxes creades, productes no mapejats i avisos.
 
 **El que NO toca** (es deixa per omplir a mà): format, colors, checkboxes, els
 grups/responsables de junta i la columna **Arribat**.
@@ -104,6 +105,7 @@ generador-fitxes-imbecils/
     Util.gs              # normalització de text i cerca per etiquetes
     Codiba.gs            # parser de la comanda de CODIBA
     Llibreta.gs          # generador de fitxes des de la plantilla
-    Menu.gs              # menú, botó i informe
+    Menu.gs              # menú, botó, diàleg i informe
+    Dialog.html          # diàleg de selecció de colles
     Damm.gs              # Fase 2 (pendent)
 ```

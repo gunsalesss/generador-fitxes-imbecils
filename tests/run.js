@@ -113,6 +113,16 @@ const b1 = parsed.barres[1];
 check(b1.header.lloc === 'FESTA INICI', 'barra 1 lloc = FESTA INICI');
 check(b1.productes.find(p => /XYZ/.test(p.nom)) === undefined, 'producte amb qty 0 s\'omet');
 
+console.log('\n== Selecció de colles ==');
+const colles = ctx.getCollesDisponibles_('https://fake');
+check(colles.length === 3, 'getCollesDisponibles_ retorna 3 colles');
+check(colles.join(',') === 'BLANCS,CONJUNTA,BLAUS', 'colles en ordre i sense duplicats');
+const nomesBlaus = ctx.parseCodiba_('https://fake', ['BLAUS']);
+check(nomesBlaus.barres.length === 1 && nomesBlaus.barres[0].header.lloc === 'MALUQUER',
+  'override colles=[BLAUS] -> només la barra MALUQUER');
+const triades = ctx.parseCodiba_('https://fake', ['BLANCS', 'BLAUS']);
+check(triades.barres.length === 2, 'override colles=[BLANCS,BLAUS] -> 2 barres');
+
 console.log('\n== Generació + emparellament de begudes ==');
 // Stub d'Active Spreadsheet amb plantilla i recollida de fulls creats.
 const creats = [];

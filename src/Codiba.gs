@@ -15,7 +15,7 @@
  *     colIndex
  *   }
  */
-function parseCodiba_(urlOId) {
+function parseCodiba_(urlOId, collesOverride) {
   var ss = obreSpreadsheet_(urlOId);
   var sheet = getSheetPerNom_(ss, CONFIG.CODIBA_SHEET);
   if (!sheet) {
@@ -84,8 +84,12 @@ function parseCodiba_(urlOId) {
     return { header: header, productes: productes, colIndex: c };
   });
 
-  // 5) Filtrar per colla (si està configurat).
-  var collesOk = (CONFIG.COLLES_INCLOSES || []).map(norm_);
+  // 5) Filtrar per colla. Prioritat: el que tria l'usuari al diàleg
+  //    (collesOverride) per sobre del valor per defecte del Config.
+  var fontColles = (collesOverride && collesOverride.length)
+    ? collesOverride
+    : (CONFIG.COLLES_INCLOSES || []);
+  var collesOk = fontColles.map(norm_);
   if (collesOk.length) {
     var abans = barres.length;
     barres = barres.filter(function (b) {
@@ -99,6 +103,34 @@ function parseCodiba_(urlOId) {
   }
 
   return { barres: barres, avisos: avisos, origenId: ss.getId() };
+}
+
+/**
+ * Llegeix la fila COLLA de la comanda i retorna la llista de colles úniques
+ * (en l'ordre en què apareixen, conservant el text original). S'usa per omplir
+ * el diàleg de selecció.
+ */
+function getCollesDisponibles_(urlOId) {
+  var ss = obreSpreadsheet_(urlOId);
+  var sheet = getSheetPerNom_(ss, CONFIG.CODIBA_SHEET);
+  if (!sheet) {
+    throw new Error('No trobo la pestanya "' + CONFIG.CODIBA_SHEET + '".');
+  }
+  var values = sheet.getDataRange().getValues();
+  var filaColla = trobaFilaPerEtiqueta_(values, CONFIG.CODIBA_CAMPS.colla);
+  if (filaColla === -1) {
+    throw new Error('No trobo la fila "' + CONFIG.CODIBA_CAMPS.colla
+      + '" a la comanda.');
+  }
+  var vistes = {};
+  var colles = [];
+  for (var c = 1; c < values[filaColla].length; c++) {
+    var nom = cellText_(values, filaColla, c);
+    if (nom === '') continue;
+    var k = norm_(nom);
+    if (!vistes[k]) { vistes[k] = true; colles.push(nom); }
+  }
+  return colles;
 }
 
 /* ---- helpers locals ---- */

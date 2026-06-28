@@ -131,8 +131,16 @@ function ompleTaulaBeguda_(full, values, barra, informe) {
   }
 
   // Files extra (sota la taula) per a begudes de la comanda que no són a la
-  // plantilla: s'hi afegeixen perquè no es perdi cap quantitat.
+  // plantilla: s'hi afegeixen perquè no es perdi cap quantitat, copiant el
+  // format de l'última fila de la taula.
   var filaExtra = ultimaFila + 1;
+  // Amplada de la taula = des de la columna de noms fins a l'última capçalera
+  // amb text (Beguda...Observacions), per copiar-ne l'estil sencer.
+  var dretaTaula = colNoms;
+  for (var hc = colNoms; hc < values[capBeguda.row].length; hc++) {
+    if (cellText_(values, capBeguda.row, hc) !== '') dretaTaula = hc;
+  }
+  var ampladaTaula = dretaTaula - colNoms + 1;
 
   barra.productes.forEach(function (p) {
     var key = clauProducte_(p.nom);
@@ -142,7 +150,12 @@ function ompleTaulaBeguda_(full, values, barra, informe) {
       row = trobaPerInclusio_(filesPlantilla, key);
     }
     if (row === undefined) {
-      // No és a la plantilla: l'afegim al final de la taula Beguda.
+      // No és a la plantilla: l'afegim al final, amb el format de l'última fila.
+      if (ultimaFila > capBeguda.row) {
+        full.getRange(ultimaFila + 1, colNoms + 1, 1, ampladaTaula)
+          .copyTo(full.getRange(filaExtra + 1, colNoms + 1, 1, ampladaTaula),
+                  { formatOnly: true });
+      }
       full.getRange(filaExtra + 1, colNoms + 1).setValue(p.nom);
       full.getRange(filaExtra + 1, colDemanat + 1).setValue(p.qty);
       filaExtra++;

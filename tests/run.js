@@ -15,15 +15,17 @@ function makeSheet(name, values) {
     _name: name,
     _values: values,
     _writes: [],
+    _copies: [],
     getName() { return this._name; },
     setName(n) { this._name = n; return this; },
     showSheet() {},
     getDataRange() { return { getValues: () => this._values }; },
-    getRange(r, c) {
+    getRange(r, c, nr, nc) {
       const self = this;
       return {
         setValue(v) { self._writes.push({ r, c, v }); },
-        clearContent() { self._writes.push({ r, c, v: '' }); }
+        clearContent() { self._writes.push({ r, c, v: '' }); },
+        copyTo(dest, opts) { self._copies.push({ r, c, nr, nc, opts }); }
       };
     },
     copyTo() { return makeSheet(this._name + ' copia', deepCopy(this._values)); }
@@ -171,6 +173,8 @@ check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) 
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
 check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');
 check(w.some(x => x.v === 3 && x.r === 14 && x.c === 13), 'beguda no a plantilla -> quantitat afegida al final');
+check(fitxa0._copies.some(c => c.opts && c.opts.formatOnly && c.r === 13 && c.c === 12),
+  'fila afegida copia el format de l\'última fila de la taula');
 const w1 = creats[1]._writes;
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la comanda -> cel·la Gasos buidada (FESTA INICI)');
 

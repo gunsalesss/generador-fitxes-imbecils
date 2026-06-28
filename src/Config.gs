@@ -16,7 +16,7 @@ const CONFIG = {
   // --- Document d'ORIGEN: la comanda de CODIBA -----------------------------
   // Enganxa aquí el link de la comanda. També es pot deixar buit i el botó
   // demanarà el link cada vegada.
-  CODIBA_URL: '',
+  CODIBA_URL: 'https://docs.google.com/spreadsheets/d/1dVZ0Ku8kf4-CuJQ7yQmL9kqjjCXegiVu4d918r2J-dw/edit?gid=1281594146#gid=1281594146',
 
   // Nom de la pestanya dins de CODIBA que conté la comanda principal.
   CODIBA_SHEET: 'COMANDA CODIBA',

@@ -10,6 +10,7 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes des de CODIBA', 'generarFitxes')
     .addSeparator()
+    .addItem('🔧 Diagnòstic DAMM (temporal)', 'diagnosticDamm')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }
@@ -164,6 +165,65 @@ function diagnosticResp() {
   }
 
   ui.alert('Diagnòstic responsable', linies.join('\n'), ui.ButtonSet.OK);
+}
+
+/**
+ * Diagnòstic temporal del Planning DAMM: obre el document, llista les pestanyes
+ * i bolca el contingut (display values) de la pestanya triada a una pestanya
+ * "_DIAG_DAMM" d'aquest document, amb les lletres de columna i números de fila
+ * originals, per poder mapejar l'estructura.
+ */
+function diagnosticDamm() {
+  var ui = SpreadsheetApp.getUi();
+  var resp = ui.prompt('Diagnòstic DAMM',
+    'Enganxa el link del Planning DAMM:', ui.ButtonSet.OK_CANCEL);
+  if (resp.getSelectedButton() !== ui.Button.OK) return;
+  var url = resp.getResponseText().trim();
+  if (!url) return;
+
+  var ss = obreSpreadsheet_(url);
+  var sheets = ss.getSheets();
+  var noms = sheets.map(function (s) { return s.getName(); });
+
+  // Si hi ha més d'una pestanya, demana quina (per nom). Per defecte la primera.
+  var sheet = sheets[0];
+  if (sheets.length > 1) {
+    var r2 = ui.prompt('Quina pestanya?',
+      'Pestanyes: ' + noms.join(', ') + '\n\nEscriu el nom de la del planning:',
+      ui.ButtonSet.OK_CANCEL);
+    if (r2.getSelectedButton() === ui.Button.OK && r2.getResponseText().trim()) {
+      var triada = getSheetPerNom_(ss, r2.getResponseText().trim());
+      if (triada) sheet = triada;
+    }
+  }
+
+  var disp = sheet.getDataRange().getDisplayValues();
+  var maxR = Math.min(disp.length, 50);
+  var maxC = Math.min(disp.length ? disp[0].length : 0, 40);
+
+  // Construir el bolcat amb capçaleres de columna (A,B,C...) i fila (1,2,3...).
+  var data = [];
+  var capcalera = ['fila\\col'];
+  for (var c = 0; c < maxC; c++) capcalera.push(colLletra_(c));
+  data.push(capcalera);
+  for (var r = 0; r < maxR; r++) {
+    var fila = [String(r + 1)];
+    for (var c2 = 0; c2 < maxC; c2++) fila.push(disp[r][c2]);
+    data.push(fila);
+  }
+
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  var out = active.getSheetByName('_DIAG_DAMM');
+  if (out) active.deleteSheet(out);
+  out = active.insertSheet('_DIAG_DAMM');
+  out.getRange(1, 1, data.length, maxC + 1).setValues(data);
+
+  ui.alert('Diagnòstic DAMM',
+    'Pestanyes del DAMM: ' + noms.join(', ') + '\n\n'
+    + 'He bolcat "' + sheet.getName() + '" a la pestanya "_DIAG_DAMM" '
+    + '(amb lletres de columna i números de fila originals).\n\n'
+    + 'Fes-me una captura o passa-me-la per mapejar l\'estructura.',
+    ui.ButtonSet.OK);
 }
 
 function mostraAjuda() {

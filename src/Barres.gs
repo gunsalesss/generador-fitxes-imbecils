@@ -67,15 +67,26 @@ function resolBarres_(barra, files) {
   if (cand.length === 1) return { row: cand[0], estat: 'ok' };
   if (cand.length === 0) return { row: null, estat: 'no-trobat' };
 
-  // Desempat per acte/BOLO.
+  // Desempat: tria la fila que casi amb més camps (BOLO/acte i/o responsable).
   var a = norm_(barra.header.acte);
-  var perActe = cand.filter(function (f) {
-    var b = norm_(f.acte);
-    return b && a && (b === a || b.indexOf(a) !== -1 || a.indexOf(b) !== -1);
+  var rsp = norm_(barra.header.responsable);
+  var scored = cand.map(function (f) {
+    var s = 0;
+    if (coincideixText_(a, norm_(f.acte))) s++;
+    if (coincideixText_(rsp, norm_(f.responsable))) s++;
+    return { f: f, s: s };
   });
-  if (perActe.length === 1) return { row: perActe[0], estat: 'ok' };
+  var max = Math.max.apply(null, scored.map(function (x) { return x.s; }));
+  var best = scored.filter(function (x) { return x.s === max; });
+  if (max > 0 && best.length === 1) return { row: best[0].f, estat: 'ok' };
   return {
     row: null, estat: 'ambigu',
     opcions: cand.map(function (f) { return f.place + ' / ' + f.acte; })
   };
+}
+
+/** Dos textos (ja normalitzats) coincideixen si són iguals o un conté l'altre. */
+function coincideixText_(a, b) {
+  if (!a || !b) return false;
+  return a === b || a.indexOf(b) !== -1 || b.indexOf(a) !== -1;
 }

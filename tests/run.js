@@ -293,6 +293,14 @@ const barresP = ctx.parseBarres_();
 check(barresP && barresP.length === 2, 'parseBarres_ llegeix 2 files');
 const rb = ctx.resolBarres_(b0, barresP);
 check(rb.estat === 'ok' && rb.row.durada === '23:00 - 03:00', 'resol PORXADA dia 23 acte Concert -> fila correcta (desempat per BOLO)');
+// Dues Porxada el mateix dia, sense acte coincident: desempat pel responsable.
+const filesDup = [
+  { dia: 22, place: 'PORXADA', grup1: 'Junta', grup2: '', acte: 'Vermut', responsable: 'Adrià', satellit: 'Alex', durada: '12:00 - 14:00' },
+  { dia: 22, place: 'PORXADA', grup1: 'Blankarras', grup2: '', acte: 'Sicuta', responsable: 'Marina', satellit: 'Helena', durada: '21:30 - 03:00' }
+];
+const rDup = ctx.resolBarres_({ header: { data: '22/08/2026', lloc: 'PORXADA', acte: '', responsable: 'Adrià' } }, filesDup);
+check(rDup.estat === 'ok' && rDup.row.grup1 === 'Junta' && rDup.row.satellit === 'Alex',
+  'dues Porxada dia 22: desempat per responsable -> Junta/Alex');
 check(rb.row.grup1 === 'Salsa Blanca' && rb.row.grup2 === 'Junta', 'grups correctes');
 check(w.some(x => x.v === '23:00 - 03:00' && x.r === 19 && x.c === 3), 'Barres: Horari (Durada) a la fitxa');
 check(w.some(x => x.v === 'Salsa Blanca' && x.r === 17 && x.c === 4), 'Barres: Grup 1 a la fitxa');

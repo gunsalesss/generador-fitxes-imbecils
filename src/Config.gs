@@ -93,8 +93,10 @@ const CONFIG = {
     lloc:        { etiqueta: 'Ubicació',      offsetCol: 1 },
     dia:         { etiqueta: 'Dia',           offsetCol: 1 },
     horaEntrega: { etiqueta: 'Arribada beguda', offsetCol: 1 },
-    responsable: { etiqueta: 'Resp. Imbecils', offsetCol: 1 },
-    telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 2 }
+    // "Resp. Imbecils" està a B16 (fusionada B:C). El nom va a D16 (+2) i el
+    // telèfon a E16 (+3).
+    responsable: { etiqueta: 'Resp. Imbecils', offsetCol: 2 },
+    telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 3 }
   },
 
   // Capçaleres de les taules dins la plantilla (per localitzar-les soles).

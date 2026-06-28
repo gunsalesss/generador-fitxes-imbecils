@@ -159,6 +159,8 @@ check(escritA('BARRIL', 45), 'BARRIL ESTRELLA: Demanat=45 escrit');
 check(escritA('COCA COLA', 20), 'PACK 6 COCA COLA 2L ZERO -> COCA COLA 2L (sinònim) Demanat=20');
 check(escritA('WHISKY', 12), 'WHISKY JB 1L -> WHISKY JB (mida) Demanat=12');
 check(w.some(x => String(x.v) === '12' && x.c === 16), 'Gasos=12 escrit a columna Gasos de Material');
+check(w.some(x => x.v === 'ADRIA' && x.r === 6 && x.c === 4), 'responsable (nom) escrit a D16 (offset +2)');
+check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telefon escrit a E16 (offset +3)');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

@@ -10,6 +10,7 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes', 'generarFitxes')
     .addSeparator()
+    .addItem('🔧 Diagnòstic pestanya (temporal)', 'diagnosticPestanya')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }
@@ -313,6 +314,43 @@ function diagnosticDammMatch() {
   });
 
   ui.alert('Diagnòstic DAMM match', linies.join('\n'), ui.ButtonSet.OK);
+}
+
+/**
+ * Diagnòstic temporal genèric: bolca una pestanya d'aquest document (per nom) a
+ * "_DIAG", amb lletres de columna i números de fila, per inspeccionar-la.
+ */
+function diagnosticPestanya() {
+  var ui = SpreadsheetApp.getUi();
+  var resp = ui.prompt('Diagnòstic pestanya',
+    'Nom de la pestanya a bolcar (p. ex. Barres 2026):', ui.ButtonSet.OK_CANCEL);
+  if (resp.getSelectedButton() !== ui.Button.OK) return;
+  var nom = resp.getResponseText().trim();
+  if (!nom) return;
+
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = getSheetPerNom_(active, nom);
+  if (!sheet) { ui.alert('No trobo la pestanya "' + nom + '".'); return; }
+
+  var disp = sheet.getDataRange().getDisplayValues();
+  var maxR = Math.min(disp.length, 30);
+  var maxC = Math.min(disp.length ? disp[0].length : 0, 15);
+
+  var data = [];
+  var cap = ['fila\\col'];
+  for (var c = 0; c < maxC; c++) cap.push(colLletra_(c));
+  data.push(cap);
+  for (var r = 0; r < maxR; r++) {
+    var fila = [String(r + 1)];
+    for (var c2 = 0; c2 < maxC; c2++) fila.push(disp[r][c2]);
+    data.push(fila);
+  }
+
+  var out = active.getSheetByName('_DIAG');
+  if (out) active.deleteSheet(out);
+  out = active.insertSheet('_DIAG');
+  out.getRange(1, 1, data.length, maxC + 1).setValues(data);
+  ui.alert('Bolcat a la pestanya "_DIAG". Passa-me\'n una captura.');
 }
 
 function mostraAjuda() {

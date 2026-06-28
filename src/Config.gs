@@ -47,6 +47,12 @@ const CONFIG = {
     gasos:        'GASOS'
   },
 
+  // --- Filtre per COLLA ----------------------------------------------------
+  // Només es generen fitxes de les barres la "COLLA" de les quals estigui en
+  // aquesta llista (sense distingir accents ni majúscules). La resta s'ometen.
+  // Deixa la llista buida [] per generar-les TOTES, sigui quina sigui la colla.
+  COLLES_INCLOSES: ['BLANCS', 'CONJUNTA'],
+
   // Els PRODUCTES són totes les files amb etiqueta a la columna A que estiguin
   // PER SOTA d'aquesta fila ancla. Tot el que hi hagi sota "GASOS" es tracta
   // com a producte de beguda.

@@ -84,6 +84,20 @@ function parseCodiba_(urlOId) {
     return { header: header, productes: productes, colIndex: c };
   });
 
+  // 5) Filtrar per colla (si està configurat).
+  var collesOk = (CONFIG.COLLES_INCLOSES || []).map(norm_);
+  if (collesOk.length) {
+    var abans = barres.length;
+    barres = barres.filter(function (b) {
+      return collesOk.indexOf(norm_(b.header.colla)) !== -1;
+    });
+    var omeses = abans - barres.length;
+    if (omeses > 0) {
+      avisos.push(omeses + ' barres omeses per colla (només es generen: '
+        + CONFIG.COLLES_INCLOSES.join(', ') + ').');
+    }
+  }
+
   return { barres: barres, avisos: avisos, origenId: ss.getId() };
 }
 

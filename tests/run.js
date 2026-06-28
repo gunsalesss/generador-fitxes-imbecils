@@ -49,20 +49,20 @@ vm.createContext(ctx);
 
 /* ---- Mock de la comanda CODIBA (extret dels pantallassos) ---- */
 const CODIBA_VALUES = [
-  ['DATA',        '23/08/2025', '24/08/2025'],
-  ['DIA',         'DISSABTE',   'DIUMENGE'],
-  ['LLOC',        'PORXADA',    'FESTA INICI'],
-  ['ACTE',        'Concert',    'Conya'],
-  ['COLLA',       'BLANCS',     'CONJUNTA'],
-  ['HORA ENTREGA','15:00',      '15:00'],
-  ['RESPONSABLE', 'ADRIA',      'ORIOL'],
-  ['TELÈFON',     '627743675',  '608112356'],
-  ['GASOS',       12,           ''],
-  ['BARRIL ESTRELLA DAMM 30L', 45, 25],
-  ['CAIXA 35 AIGUA VERI 33CL', 15, 6],
-  ['PACK 6 COCA COLA 2L ZERO', 20, 12],
-  ['WHISKY JB 1L',             12, 8],
-  ['PRODUCTE INVENTAT XYZ',    3,  0],
+  ['DATA',        '23/08/2025', '24/08/2025', '25/08/2025'],
+  ['DIA',         'DISSABTE',   'DIUMENGE',   'DILLUNS'],
+  ['LLOC',        'PORXADA',    'FESTA INICI','MALUQUER'],
+  ['ACTE',        'Concert',    'Conya',      'Proyecto X'],
+  ['COLLA',       'BLANCS',     'CONJUNTA',   'BLAUS'],
+  ['HORA ENTREGA','15:00',      '15:00',      '13:30'],
+  ['RESPONSABLE', 'ADRIA',      'ORIOL',      'GORDILLO'],
+  ['TELÈFON',     '627743675',  '608112356', '664419506'],
+  ['GASOS',       12,           '',           6],
+  ['BARRIL ESTRELLA DAMM 30L', 45, 25, 14],
+  ['CAIXA 35 AIGUA VERI 33CL', 15, 6,  4],
+  ['PACK 6 COCA COLA 2L ZERO', 20, 12, 6],
+  ['WHISKY JB 1L',             12, 8,  6],
+  ['PRODUCTE INVENTAT XYZ',    3,  0,  0],
 ];
 const CODIBA_SS = {
   getId: () => 'CODIBA_ID',
@@ -101,7 +101,9 @@ check(ctx.normProducte_('PACK 6 COCA COLA 2L') === 'PACK 6 COCA COLA', 'normProd
 
 console.log('\n== Parseig CODIBA ==');
 const parsed = ctx.parseCodiba_('https://fake');
-check(parsed.barres.length === 2, 'detecta 2 barres (2 columnes)');
+check(parsed.barres.length === 2, 'filtra per colla: 2 barres (BLANCS+CONJUNTA), omet BLAUS');
+check(parsed.barres.every(b => /BLANCS|CONJUNTA/i.test(b.header.colla)), 'cap barra BLAUS passa el filtre');
+check((parsed.avisos || []).some(a => /omeses per colla/.test(a)), 'avisa de les barres omeses');
 const b0 = parsed.barres[0];
 check(b0.header.lloc === 'PORXADA', 'barra 0 lloc = PORXADA');
 check(b0.header.responsable === 'ADRIA', 'barra 0 responsable = ADRIA');

@@ -47,15 +47,34 @@ function generaLlibreta_(barres) {
   return informe;
 }
 
-/** Construeix un nom de pestanya únic per la fitxa. */
+/**
+ * Construeix un nom de pestanya únic amb el format:
+ *   <dia_setmana> <dia_mes> <plaça>   ->  "Dijous 27 BARANGÉ"
+ */
 function nomFitxa_(barra, nomsUsats) {
-  var base = (barra.header.lloc || barra.header.acte || 'BARRA').trim();
-  if (barra.header.data) base += ' ' + barra.header.data;
+  var parts = [
+    capitalitza_(barra.header.dia),     // Dijous
+    diaDelMes_(barra.header.data),       // 27
+    (barra.header.lloc || '').trim()     // BARANGÉ
+  ].filter(function (x) { return x; });
+  var base = parts.join(' ').trim() || (barra.header.acte || 'BARRA');
   base = base.substring(0, 90); // límit de Sheets
   var nom = base, i = 2;
   while (nomsUsats[nom]) { nom = base + ' (' + i + ')'; i++; }
   nomsUsats[nom] = true;
   return nom;
+}
+
+/** "DISSABTE" -> "Dissabte". */
+function capitalitza_(s) {
+  s = (s || '').trim().toLowerCase();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+/** Extreu el dia del mes d'una data "27/08/2025" -> "27". */
+function diaDelMes_(data) {
+  var m = String(data || '').match(/\d+/);
+  return m ? String(parseInt(m[0], 10)) : '';
 }
 
 function esProtegida_(nom) {

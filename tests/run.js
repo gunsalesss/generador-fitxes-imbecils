@@ -180,6 +180,8 @@ plantilla.copyTo = function () {
 
 const informe = ctx.generaLlibreta_(parsed.barres);
 check(informe.creades.length === 2, 'genera 2 fitxes');
+check(informe.creades[0] === 'Dissabte 23 PORXADA', 'nom de pestanya: <dia> <dia_mes> <plaça> ("Dissabte 23 PORXADA")');
+check(informe.creades[1] === 'Diumenge 24 FESTA INICI', 'segona fitxa: "Diumenge 24 FESTA INICI"');
 check(!!informe.productesAfegits['PRODUCTE INVENTAT XYZ'], 'XYZ es marca com a afegit (no eren a la plantilla)');
 
 // Comprovar escriptures a la primera fitxa creada.

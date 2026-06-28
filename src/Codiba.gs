@@ -23,7 +23,11 @@ function parseCodiba_(urlOId, collesOverride) {
       + 'la comanda. Revisa CONFIG.CODIBA_SHEET.');
   }
 
-  var values = sheet.getDataRange().getValues();
+  var rang = sheet.getDataRange();
+  var values = rang.getValues();
+  // Valors TAL COM ES VEUEN (text exacte): així les hores ("15:00") i dates es
+  // copien sense reformatar ni descol·locar-se per la zona horària.
+  var display = rang.getDisplayValues();
   if (!values.length) throw new Error('La comanda de CODIBA sembla buida.');
 
   var avisos = [];
@@ -77,7 +81,7 @@ function parseCodiba_(urlOId, collesOverride) {
   var barres = colsBarra.map(function (c) {
     var header = {};
     Object.keys(filaCamp).forEach(function (camp) {
-      header[camp] = cellText_(values, filaCamp[camp], c);
+      header[camp] = dispText_(display, filaCamp[camp], c);
     });
 
     var productes = [];
@@ -157,12 +161,15 @@ function cellText_(values, r, c) {
   if (r == null || r < 0 || r >= values.length) return '';
   if (c < 0 || c >= values[r].length) return '';
   var v = values[r][c];
-  if (v instanceof Date) {
-    // Google Sheets desa una hora pura com una data de 1899-12-30. Si l'any és
-    // anterior a 1900, és una hora -> HH:mm; si no, és una data -> dd/MM/yyyy.
-    var fmt = v.getFullYear() <= 1899 ? 'HH:mm' : 'dd/MM/yyyy';
-    return Utilities.formatDate(v, CONFIG_TZ_(), fmt);
-  }
+  if (v instanceof Date) return Utilities.formatDate(v, CONFIG_TZ_(), 'dd/MM/yyyy');
+  return v === null || v === undefined ? '' : String(v).trim();
+}
+
+/** Llegeix el text TAL COM ES VEU (display value), sense reformatar. */
+function dispText_(display, r, c) {
+  if (r == null || r < 0 || r >= display.length) return '';
+  if (c < 0 || c >= display[r].length) return '';
+  var v = display[r][c];
   return v === null || v === undefined ? '' : String(v).trim();
 }
 

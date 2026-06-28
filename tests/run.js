@@ -10,16 +10,23 @@ const path = require('path');
 const vm = require('vm');
 
 /* ---- Stubs mínims dels serveis de Google ---- */
-function makeSheet(name, values) {
+function makeSheet(name, values, displayValues) {
   return {
     _name: name,
     _values: values,
+    _display: displayValues,
     _writes: [],
     _copies: [],
     getName() { return this._name; },
     setName(n) { this._name = n; return this; },
     showSheet() {},
-    getDataRange() { return { getValues: () => this._values }; },
+    getDataRange() {
+      const self = this;
+      return {
+        getValues: () => self._values,
+        getDisplayValues: () => self._display || self._values
+      };
+    },
     getRange(r, c, nr, nc) {
       const self = this;
       if (typeof r === 'string') { // A1, p.ex. "S4"
@@ -80,10 +87,18 @@ const CODIBA_VALUES = [
   ['PRODUCTE INVENTAT XYZ',    3,  0,  0],
   ['GEL 20KG',                 8,  0,  5],
 ];
+// Display values: el text TAL COM ES VEU. Les Dates de getValues sortirien mal
+// (BADHORA); el parser ha d'agafar aquests valors exactes ("15:00", "13:30").
+const CODIBA_DISPLAY = CODIBA_VALUES.map(row =>
+  row.map(v => v instanceof Date ? 'BADHORA' : (v === '' ? '' : String(v))));
+const hgDisplay = CODIBA_DISPLAY.find(r => r[0] === 'Hora gel');
+hgDisplay[1] = '15:00'; hgDisplay[3] = '13:30';
+
 const CODIBA_SS = {
   getId: () => 'CODIBA_ID',
-  getSheetByName: (n) => n === 'COMANDA CODIBA' ? makeSheet('COMANDA CODIBA', CODIBA_VALUES) : null,
-  getSheets: () => [makeSheet('COMANDA CODIBA', CODIBA_VALUES)],
+  getSheetByName: (n) => n === 'COMANDA CODIBA'
+    ? makeSheet('COMANDA CODIBA', CODIBA_VALUES, CODIBA_DISPLAY) : null,
+  getSheets: () => [makeSheet('COMANDA CODIBA', CODIBA_VALUES, CODIBA_DISPLAY)],
 };
 
 /* ---- Mock de la plantilla de la Llibreta ---- */
@@ -116,8 +131,7 @@ console.log('\n== Normalització ==');
 check(ctx.norm_('TELÈFON') === 'TELEFON', 'norm_ treu accents');
 check(ctx.normProducte_('WHISKY JB 1L') === ctx.normProducte_('WHISKY JB'), 'normProducte_ iguala mides');
 check(ctx.normProducte_('PACK 6 COCA COLA 2L') === 'PACK 6 COCA COLA', 'normProducte_ treu 2L');
-check(ctx.cellText_([[new Date(1899, 11, 30, 17, 0)]], 0, 0) === '17:00', 'cellText_ formata hora pura com HH:mm');
-check(ctx.cellText_([[new Date(2025, 7, 23)]], 0, 0) === '23/08/2025', 'cellText_ formata data com dd/MM/yyyy');
+check(ctx.dispText_([['', '15:00']], 0, 1) === '15:00', 'dispText_ copia el text tal com es veu');
 
 console.log('\n== Parseig CODIBA ==');
 const parsed = ctx.parseCodiba_('https://fake');
@@ -183,7 +197,7 @@ check(w.some(x => x.v === 'ADRIA' && x.r === 6 && x.c === 4), 'responsable (nom)
 check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telefon escrit a E16 (offset +3)');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
-check(w.some(x => x.v === '8 (17:00)' && x.r === 2 && x.c === 17), 'gel -> Demanat/Gel = "8 (17:00)" (quantitat + Hora gel)');
+check(w.some(x => x.v === '8 (15:00)' && x.r === 2 && x.c === 17), 'gel -> Demanat/Gel = "8 (15:00)" (quantitat + Hora gel, valor exacte del display)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 13), 'Mostradors es buida (ve de DAMM)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 14), 'Tiradors es buida (ve de DAMM)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 15), 'Neveres es buida (ve de DAMM)');

@@ -10,7 +10,6 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes', 'generarFitxes')
     .addSeparator()
-    .addItem('🔧 Diagnòstic DAMM match (temporal)', 'diagnosticDammMatch')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }

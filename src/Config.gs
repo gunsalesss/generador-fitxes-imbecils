@@ -121,6 +121,11 @@ const CONFIG = {
   PLANTILLA_COL_DEMANAT:   'Demanat',  // nom de la columna a omplir
   PLANTILLA_FILA_GASOS:    'Gasos',    // dins la taula Material
 
+  // Columnes de la taula Material que de moment es BUIDEN sempre, perquè la
+  // seva info ve del Planning DAMM (encara no integrat). Quan es faci la
+  // Fase 2, aquí s'hi ompliran les dades en lloc de buidar-les.
+  MATERIAL_DEMANAT_BUIDAR: ['Mostradors', 'Tiradors', 'Neveres'],
+
   // --- Comportament --------------------------------------------------------
   // Si una fitxa ja existeix, què fem? 'replace' = la regenera de zero.
   // 'skip' = la deixa intacta.  (De moment només 'replace'.)

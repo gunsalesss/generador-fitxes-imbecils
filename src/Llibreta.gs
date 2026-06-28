@@ -95,8 +95,35 @@ function omplePlantilla_(full, barra, informe) {
   // --- 3) Gasos a la taula Material ---
   ompleGasos_(full, values, barra, informe);
 
+  // --- 3b) Columnes de Material que vénen de DAMM: buidar de moment ---
+  buidaColumnesMaterial_(full, values);
+
   // --- 4) Gel a la taula Material (cel·la fixa) ---
   ompleGel_(full, barra);
+}
+
+/** Localitza la fila "Demanat" dins la taula Material. -1 si no hi és. */
+function filaDemanatMaterial_(values, capMaterial) {
+  for (var r = capMaterial.row + 1; r < values.length; r++) {
+    if (etiquetaCoincideix_(values[r][capMaterial.col], CONFIG.PLANTILLA_COL_DEMANAT)) {
+      return r;
+    }
+  }
+  return -1;
+}
+
+/** Buida les columnes de Material que de moment no omplim (vénen de DAMM). */
+function buidaColumnesMaterial_(full, values) {
+  var cols = CONFIG.MATERIAL_DEMANAT_BUIDAR || [];
+  if (!cols.length) return;
+  var capMaterial = trobaEtiqueta_(values, CONFIG.PLANTILLA_TAULA_MATERIAL);
+  if (!capMaterial) return;
+  var filaDemanat = filaDemanatMaterial_(values, capMaterial);
+  if (filaDemanat === -1) return;
+  cols.forEach(function (h) {
+    var c = trobaColumnaEnFila_(values, capMaterial.row, h);
+    if (c !== -1) full.getRange(filaDemanat + 1, c + 1).clearContent();
+  });
 }
 
 /** Un producte és "gel" si el seu nom conté el text configurat. */
@@ -220,13 +247,7 @@ function ompleGasos_(full, values, barra, informe) {
   var colGasos = trobaColumnaEnFila_(values, capMaterial.row, CONFIG.PLANTILLA_FILA_GASOS);
   if (colGasos === -1) return;
 
-  // La fila "Demanat" dins la taula material (per sota de la capçalera).
-  var filaDemanat = -1;
-  for (var r = capMaterial.row + 1; r < values.length; r++) {
-    if (etiquetaCoincideix_(values[r][capMaterial.col], CONFIG.PLANTILLA_COL_DEMANAT)) {
-      filaDemanat = r; break;
-    }
-  }
+  var filaDemanat = filaDemanatMaterial_(values, capMaterial);
   if (filaDemanat === -1) return;
 
   var cel = full.getRange(filaDemanat + 1, colGasos + 1);

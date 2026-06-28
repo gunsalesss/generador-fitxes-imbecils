@@ -85,7 +85,7 @@ const CODIBA_SS = {
 function plantillaValues() {
   return [
     ['', '', '', '', '', '', '', '', '', '', '', 'Material', 'Mostradors', 'Tiradors', 'Neveres', 'Gasos'],
-    ['', 'Bolo', '', 'Ubicació', '', '', '', '', '', '', '', 'Demanat', '', '', '', ''],
+    ['', 'Bolo', '', 'Ubicació', '', '', '', '', '', '', '', 'Demanat', 12, 6, 9, ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'Arribat', '', '', '', ''],
     ['', 'Dia', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Arribada beguda', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
@@ -177,6 +177,9 @@ check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telef
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
 check(w.some(x => x.v === '8 (15:00)' && x.r === 4 && x.c === 19), 'gel -> S4 = "8 (15:00)" (quantitat + hora entrega)');
+check(w.some(x => x.v === '' && x.r === 2 && x.c === 13), 'Mostradors es buida (ve de DAMM)');
+check(w.some(x => x.v === '' && x.r === 2 && x.c === 14), 'Tiradors es buida (ve de DAMM)');
+check(w.some(x => x.v === '' && x.r === 2 && x.c === 15), 'Neveres es buida (ve de DAMM)');
 check(!w.some(x => x.v === 'GEL 20KG'), 'el gel NO s\'afegeix a la taula Beguda');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
 check(w.some(x => x.v === 'PRODUCTE INVENTAT XYZ' && x.r === 14 && x.c === 12), 'beguda no a plantilla -> nom afegit al final de la taula');

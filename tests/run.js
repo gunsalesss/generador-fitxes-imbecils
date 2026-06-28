@@ -103,18 +103,20 @@ const CODIBA_SS = {
 };
 
 /* ---- Mock del Planning DAMM ---- */
+// Entrega (verd) el DV21; quantitats i recollida (vermell) el DG23. Així la
+// barra del dia 23 ha d'agafar l'entrega "16h" del dia 21 (carry-forward).
 const DAMM_DISPLAY = [
   ['', 'DV21', '', '', 'DS22', '', '', 'DG23', '', '', 'DLL24', '', ''],
   ['', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N'],
-  ['PORXADA', '', '', '', '', '', '', '16h', '', '', '', '', ''],
-  ['', '', '', '', '', '', '', '12', '7', '10', '', '', ''],
+  ['PORXADA', '16h', '', '', '', '', '', '', '', '', '', '', ''],
+  ['', '5', '2', '1', '', '', '', '12', '7', '10', '', '', ''],
   ['', '', '', '', '', '', '', '4.00h', '', '', '', '', ''],
 ];
 const DAMM_VALUES = [
   ['', 'DV21', '', '', 'DS22', '', '', 'DG23', '', '', 'DLL24', '', ''],
   ['', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N'],
   ['PORXADA', '', '', '', '', '', '', '', '', '', '', '', ''],
-  ['', '', '', '', '', '', '', 12, 7, 10, '', '', ''],
+  ['', 5, 2, 1, '', '', '', 12, 7, 10, '', '', ''],
   ['', '', '', '', '', '', '', '', '', '', '', '', ''],
 ];
 const DAMM_SS = {
@@ -186,9 +188,12 @@ console.log('\n== Parseig DAMM ==');
 const dammP = ctx.parseDamm_('https://docs.google.com/spreadsheets/d/DAMM/edit');
 check(dammP.placesNorm.indexOf('PORXADA') !== -1, 'detecta la plaça PORXADA');
 check(dammP.dies.indexOf(23) !== -1, 'detecta el dia 23 (DG23)');
-const cel = dammP.mapa['PORXADA|23'];
-check(cel && cel.mostradors === 12 && cel.tiradors === 7 && cel.neveres === 10, 'PORXADA dia 23: M/T/N = 12/7/10');
-check(cel && cel.entrega === '16h' && cel.recollida === '4.00h', 'PORXADA dia 23: entrega 16h, recollida 4.00h');
+const P = dammP.perPlaca['PORXADA'];
+check(P && P.q[23] && P.q[23].mostradors === 12 && P.q[23].tiradors === 7 && P.q[23].neveres === 10, 'PORXADA dia 23: M/T/N = 12/7/10');
+check(P && P.ent[21] === '16h', 'PORXADA: entrega "16h" el dia 21 (DV21)');
+check(P && P.rec[23] === '4.00h', 'PORXADA: recollida "4.00h" el dia 23');
+check(ctx.entregaAplicable_(P, 23) === '16h', 'entrega aplicable al dia 23 -> carry del 21 ("16h")');
+check(ctx.recollidaAplicable_(P, 21) === '4.00h', 'recollida aplicable al dia 21 -> carry cap al 23 ("4.00h")');
 const resOk = ctx.resolPlaceDamm_('PORXADA', dammP.placesNorm);
 check(resOk.estat === 'ok' && resOk.place === 'PORXADA', 'resol PORXADA -> ok');
 const resNo = ctx.resolPlaceDamm_('LLOC INEXISTENT', dammP.placesNorm);

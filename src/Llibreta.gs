@@ -140,9 +140,11 @@ function ompleDamm_(full, values, barra, damm, informe) {
     return;
   }
 
-  var dades = damm.mapa[res.place + '|' + diaNum] || {};
+  var P = damm.perPlaca[res.place];
+  if (!P) return;
+  var q = P.q[diaNum] || {};
 
-  // Quantitats M/T/N a la fila Demanat de la taula Material.
+  // Quantitats M/T/N (per dia) a la fila Demanat de la taula Material.
   var capMaterial = trobaEtiqueta_(values, CONFIG.PLANTILLA_TAULA_MATERIAL);
   if (capMaterial) {
     var filaDemanat = filaDemanatMaterial_(values, capMaterial);
@@ -152,7 +154,7 @@ function ompleDamm_(full, values, barra, damm, informe) {
         var header = CONFIG.DAMM_MATERIAL[mtn];
         var c = trobaColumnaEnFila_(values, capMaterial.row, header);
         if (c === -1) return;
-        var val = dades[clau[mtn]];
+        var val = q[clau[mtn]];
         var cel = full.getRange(filaDemanat + 1, c + 1);
         if (val === null || val === undefined) cel.clearContent();
         else cel.setValue(val);
@@ -160,9 +162,9 @@ function ompleDamm_(full, values, barra, damm, informe) {
     }
   }
 
-  // Hores a Arribada / Recollida material (caixa esquerra: valor a +2).
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, dades.entrega, 2);
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, dades.recollida, 2);
+  // Hores: entrega aplicable (dia <= D) i recollida aplicable (dia >= D).
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, entregaAplicable_(P, diaNum), 2);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, recollidaAplicable_(P, diaNum), 2);
 }
 
 /** Escriu un valor a `offsetCol` cel·les de l'etiqueta, o la buida si no n'hi ha. */

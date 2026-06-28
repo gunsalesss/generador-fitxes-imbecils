@@ -3,16 +3,22 @@
  *
  * Estructura del planning:
  *  - Fila 1: etiquetes de dia (DV21, DS22, ... DG30) en grups de 3 columnes.
- *  - Fila 2: subcapçaleres M / T / N per cada dia.
+ *  - Fila 2: subcapçaleres M / T / N (Mostradors / Tiradors / Neveres).
  *  - Cada plaça ocupa un BLOC de 3 files:
- *      fila r   -> nom de la plaça (col A) + hora d'ENTREGA (a la col M del dia)
+ *      fila r   -> nom de la plaça (col A) + hora d'ENTREGA (verd, a la col M)
  *      fila r+1 -> quantitats M / T / N per cada dia
- *      fila r+2 -> hora de RECOLLIDA (a la col M del dia)
+ *      fila r+2 -> hora de RECOLLIDA (vermell, a la col M)
  *
- * Retorna:
- *   { mapa: { 'NORMPLACA|diaNum': {mostradors,tiradors,neveres,entrega,recollida} },
- *     placesNorm: [ ... ],
- *     dies: [num, ...] }
+ * El material s'entrega un dia i es recull un altre, però hi és tots els dies
+ * entremig. Per això es desa, per plaça: les quantitats per dia, i totes les
+ * entregues i recollides amb el seu dia. Després, per a una fitxa d'un dia D:
+ *  - Arribada material = l'entrega del dia <= D més proper (es manté fins que es
+ *    recull).
+ *  - Recollida material = la recollida del dia >= D més proper.
+ *
+ * Retorna { perPlaca: { NORMPLACA: {q:{dia:{mostradors,tiradors,neveres}},
+ *                                   ent:{dia:hora}, rec:{dia:hora}} },
+ *           placesNorm: [...], dies: [num,...] }
  */
 function parseDamm_(urlOId) {
   var ss = obreSpreadsheet_(urlOId);
@@ -29,8 +35,7 @@ function parseDamm_(urlOId) {
   var disp = rang.getDisplayValues();
   if (!disp.length) throw new Error('El Planning DAMM sembla buit.');
 
-  // 1) Dies: a la primera fila, cada etiqueta no buida marca la columna M del
-  //    dia. El número de l'etiqueta (DJ27 -> 27) és la clau d'emparellament.
+  // 1) Dies: a la primera fila, cada etiqueta marca la columna M del dia.
   var dies = {}; // diaNum -> colM (0-based)
   for (var c = 1; c < disp[0].length; c++) {
     var lab = String(disp[0][c] || '').trim();
@@ -39,8 +44,8 @@ function parseDamm_(urlOId) {
     if (m) dies[parseInt(m[0], 10)] = c;
   }
 
-  // 2) Places: blocs de 3 files a partir de la fila 3 (índex 2) fins la llegenda.
-  var mapa = {};
+  // 2) Places: blocs de 3 files fins la llegenda.
+  var perPlaca = {};
   var placesNorm = [];
   for (var r = 2; r < disp.length; r++) {
     var nomA = String(disp[r][0] || '').trim();
@@ -48,7 +53,8 @@ function parseDamm_(urlOId) {
     if (nomA.indexOf('=') !== -1) break; // llegenda (M = Mostradors, ...)
 
     var pn = norm_(nomA);
-    if (placesNorm.indexOf(pn) === -1) placesNorm.push(pn);
+    if (!perPlaca[pn]) { perPlaca[pn] = { q: {}, ent: {}, rec: {} }; placesNorm.push(pn); }
+    var P = perPlaca[pn];
 
     Object.keys(dies).forEach(function (diaNum) {
       var colM = dies[diaNum];
@@ -57,17 +63,37 @@ function parseDamm_(urlOId) {
       var nev = cellNum_(values, r + 1, colM + 2);
       var entrega = String((disp[r] && disp[r][colM]) || '').trim();
       var recollida = (disp[r + 2] && String(disp[r + 2][colM] || '').trim()) || '';
-      if (most === null && tir === null && nev === null && !entrega && !recollida) {
-        return; // res per aquest dia
+      if (most !== null || tir !== null || nev !== null) {
+        P.q[diaNum] = { mostradors: most, tiradors: tir, neveres: nev };
       }
-      mapa[pn + '|' + diaNum] = {
-        mostradors: most, tiradors: tir, neveres: nev,
-        entrega: entrega, recollida: recollida
-      };
+      if (entrega) P.ent[diaNum] = entrega;
+      if (recollida) P.rec[diaNum] = recollida;
     });
   }
 
-  return { mapa: mapa, placesNorm: placesNorm, dies: Object.keys(dies).map(Number) };
+  return { perPlaca: perPlaca, placesNorm: placesNorm, dies: Object.keys(dies).map(Number) };
+}
+
+/** Entrega aplicable al dia D: la del dia <= D més proper (es manté fins recollir). */
+function entregaAplicable_(P, dia) {
+  if (P.ent[dia]) return P.ent[dia];
+  var best = null;
+  Object.keys(P.ent).forEach(function (d) {
+    d = Number(d);
+    if (d <= dia && (best === null || d > best)) best = d;
+  });
+  return best === null ? '' : P.ent[best];
+}
+
+/** Recollida aplicable al dia D: la del dia >= D més proper. */
+function recollidaAplicable_(P, dia) {
+  if (P.rec[dia]) return P.rec[dia];
+  var best = null;
+  Object.keys(P.rec).forEach(function (d) {
+    d = Number(d);
+    if (d >= dia && (best === null || d < best)) best = d;
+  });
+  return best === null ? '' : P.rec[best];
 }
 
 /**

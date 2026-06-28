@@ -98,8 +98,8 @@ function omplePlantilla_(full, barra, informe) {
   // --- 3b) Columnes de Material que vénen de DAMM: buidar de moment ---
   buidaColumnesMaterial_(full, values);
 
-  // --- 4) Gel a la taula Material (cel·la fixa) ---
-  ompleGel_(full, barra);
+  // --- 4) Gel a la taula Material (columna "Gel (h)", fila Demanat) ---
+  ompleGel_(full, values, barra);
 }
 
 /** Localitza la fila "Demanat" dins la taula Material. -1 si no hi és. */
@@ -128,23 +128,30 @@ function buidaColumnesMaterial_(full, values) {
 
 /** Un producte és "gel" si el seu nom conté el text configurat. */
 function esGel_(nom) {
-  if (!CONFIG.CEL_GEL) return false;
+  if (!CONFIG.PLANTILLA_FILA_GEL) return false;
   var t = norm_(CONFIG.PRODUCTE_GEL_CONTE || '');
   return t !== '' && norm_(nom).indexOf(t) !== -1;
 }
 
 /**
- * Escriu el gel a la cel·la CEL_GEL com a "quantitat (hora d'entrega)".
- * Suma les quantitats de tots els productes de gel. Si no n'hi ha, buida la
- * cel·la (treu l'exemple de la plantilla).
+ * Escriu el gel a la cel·la Demanat de la columna "Gel (h)" com a
+ * "quantitat (hora gel)". Suma les quantitats de tots els productes de gel.
+ * Si no n'hi ha, buida la cel·la (treu l'exemple de la plantilla).
  */
-function ompleGel_(full, barra) {
-  if (!CONFIG.CEL_GEL) return;
-  var cel = full.getRange(CONFIG.CEL_GEL);
+function ompleGel_(full, values, barra) {
+  if (!CONFIG.PLANTILLA_FILA_GEL) return;
+  var capMaterial = trobaEtiqueta_(values, CONFIG.PLANTILLA_TAULA_MATERIAL);
+  if (!capMaterial) return;
+  var colGel = trobaColumnaEnFila_(values, capMaterial.row, CONFIG.PLANTILLA_FILA_GEL);
+  if (colGel === -1) return;
+  var filaDemanat = filaDemanatMaterial_(values, capMaterial);
+  if (filaDemanat === -1) return;
+
+  var cel = full.getRange(filaDemanat + 1, colGel + 1);
   var gels = barra.productes.filter(function (p) { return esGel_(p.nom); });
   if (!gels.length) { cel.clearContent(); return; }
   var qty = gels.reduce(function (s, p) { return s + (Number(p.qty) || 0); }, 0);
-  var hora = barra.header.horaEntrega;
+  var hora = barra.header.horaGel;
   cel.setValue(hora ? (qty + ' (' + hora + ')') : qty);
 }
 

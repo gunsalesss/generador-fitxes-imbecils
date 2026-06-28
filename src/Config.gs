@@ -44,7 +44,8 @@ const CONFIG = {
     horaEntrega:  'HORA ENTREGA|HORA D\'ENTREGA',
     responsable:  'RESPONSABLE',
     telefon:      'TELEFON|TELÈFON',
-    gasos:        'GASOS'
+    gasos:        'GASOS',
+    horaGel:      'HORA GEL'
   },
 
   // --- Filtre per COLLA ----------------------------------------------------
@@ -109,11 +110,12 @@ const CONFIG = {
 
   // --- Gel: va a la taula Material, no a la de begudes ---------------------
   // Els productes de la comanda que continguin aquest text es tracten com a
-  // gel: la seva quantitat (sumada) va a la cel·la CEL_GEL amb la hora
-  // d'entrega entre parèntesis -> "8 (15:00)". I NO surten a la taula Beguda.
-  // Deixa CEL_GEL buit ('') per desactivar aquest tractament especial.
+  // gel: la seva quantitat (sumada) va a la cel·la Demanat sota la columna
+  // "Gel (h)" amb la hora del gel (fila "Hora gel" de la comanda) entre
+  // parèntesis -> "8 (17:00)". I NO surten a la taula Beguda.
+  // Deixa PLANTILLA_FILA_GEL buit ('') per desactivar el tractament especial.
   PRODUCTE_GEL_CONTE: 'GEL',
-  CEL_GEL: 'S4',
+  PLANTILLA_FILA_GEL: 'Gel (h)',
 
   // Capçaleres de les taules dins la plantilla (per localitzar-les soles).
   PLANTILLA_TAULA_BEGUDA:  'Beguda',   // capçalera de la columna de noms

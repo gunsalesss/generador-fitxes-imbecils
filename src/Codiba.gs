@@ -61,9 +61,14 @@ function parseCodiba_(urlOId, collesOverride) {
       + 'Comprova que la comanda té dades a partir de la columna B.');
   }
 
-  // 3) Llista de productes: files amb etiqueta a col A per sota de l'àncora.
+  // 3) Llista de productes: files amb etiqueta a col A per sota de l'àncora,
+  //    excloent les files que són camps de capçalera (p. ex. "Hora gel", que
+  //    pot quedar per sota de GASOS i no és cap beguda).
+  var filesCamp = {};
+  Object.keys(filaCamp).forEach(function (k) { filesCamp[filaCamp[k]] = true; });
   var productesFiles = [];
   for (var r = filaAncora + 1; r < values.length; r++) {
+    if (filesCamp[r]) continue;
     var nom = cellText_(values, r, 0);
     if (nom !== '') productesFiles.push({ row: r, nom: nom });
   }
@@ -152,7 +157,12 @@ function cellText_(values, r, c) {
   if (r == null || r < 0 || r >= values.length) return '';
   if (c < 0 || c >= values[r].length) return '';
   var v = values[r][c];
-  if (v instanceof Date) return Utilities.formatDate(v, CONFIG_TZ_(), 'dd/MM/yyyy');
+  if (v instanceof Date) {
+    // Google Sheets desa una hora pura com una data de 1899-12-30. Si l'any és
+    // anterior a 1900, és una hora -> HH:mm; si no, és una data -> dd/MM/yyyy.
+    var fmt = v.getFullYear() <= 1899 ? 'HH:mm' : 'dd/MM/yyyy';
+    return Utilities.formatDate(v, CONFIG_TZ_(), fmt);
+  }
   return v === null || v === undefined ? '' : String(v).trim();
 }
 

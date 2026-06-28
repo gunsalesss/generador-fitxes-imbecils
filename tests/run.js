@@ -45,7 +45,11 @@ const SpreadsheetApp = {
   getActiveSpreadsheet: () => ACTIVE_SS,
 };
 const Utilities = {
-  formatDate: (d) => '01/01/2025',
+  formatDate: (d, tz, fmt) => {
+    const p = (n) => String(n).padStart(2, '0');
+    if (fmt === 'HH:mm') return p(d.getHours()) + ':' + p(d.getMinutes());
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear();
+  },
 };
 const Session = { getScriptTimeZone: () => 'Europe/Madrid' };
 
@@ -68,6 +72,7 @@ const CODIBA_VALUES = [
   ['RESPONSABLE', 'ADRIA',      'ORIOL',      'GORDILLO'],
   ['TELÈFON',     '627743675',  '608112356', '664419506'],
   ['GASOS',       12,           '',           6],
+  ['Hora gel',    new Date(1899, 11, 30, 17, 0), '', new Date(1899, 11, 30, 13, 30)],
   ['BARRIL ESTRELLA DAMM 30L', 45, 25, 14],
   ['CAIXA 35 AIGUA VERI 33CL', 15, 6,  4],
   ['PACK 6 COCA COLA 2L ZERO', 20, 12, 6],
@@ -84,7 +89,7 @@ const CODIBA_SS = {
 /* ---- Mock de la plantilla de la Llibreta ---- */
 function plantillaValues() {
   return [
-    ['', '', '', '', '', '', '', '', '', '', '', 'Material', 'Mostradors', 'Tiradors', 'Neveres', 'Gasos'],
+    ['', '', '', '', '', '', '', '', '', '', '', 'Material', 'Mostradors', 'Tiradors', 'Neveres', 'Gasos', 'Gel (h)'],
     ['', 'Bolo', '', 'Ubicació', '', '', '', '', '', '', '', 'Demanat', 12, 6, 9, ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'Arribat', '', '', '', ''],
     ['', 'Dia', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
@@ -111,6 +116,8 @@ console.log('\n== Normalització ==');
 check(ctx.norm_('TELÈFON') === 'TELEFON', 'norm_ treu accents');
 check(ctx.normProducte_('WHISKY JB 1L') === ctx.normProducte_('WHISKY JB'), 'normProducte_ iguala mides');
 check(ctx.normProducte_('PACK 6 COCA COLA 2L') === 'PACK 6 COCA COLA', 'normProducte_ treu 2L');
+check(ctx.cellText_([[new Date(1899, 11, 30, 17, 0)]], 0, 0) === '17:00', 'cellText_ formata hora pura com HH:mm');
+check(ctx.cellText_([[new Date(2025, 7, 23)]], 0, 0) === '23/08/2025', 'cellText_ formata data com dd/MM/yyyy');
 
 console.log('\n== Parseig CODIBA ==');
 const parsed = ctx.parseCodiba_('https://fake');
@@ -176,7 +183,7 @@ check(w.some(x => x.v === 'ADRIA' && x.r === 6 && x.c === 4), 'responsable (nom)
 check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telefon escrit a E16 (offset +3)');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
-check(w.some(x => x.v === '8 (15:00)' && x.r === 4 && x.c === 19), 'gel -> S4 = "8 (15:00)" (quantitat + hora entrega)');
+check(w.some(x => x.v === '8 (17:00)' && x.r === 2 && x.c === 17), 'gel -> Demanat/Gel = "8 (17:00)" (quantitat + Hora gel)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 13), 'Mostradors es buida (ve de DAMM)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 14), 'Tiradors es buida (ve de DAMM)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 15), 'Neveres es buida (ve de DAMM)');
@@ -188,7 +195,7 @@ check(fitxa0._copies.some(c => c.opts && c.opts.formatOnly && c.r === 13 && c.c 
   'fila afegida copia el format de l\'última fila de la taula');
 const w1 = creats[1]._writes;
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la comanda -> cel·la Gasos buidada (FESTA INICI)');
-check(w1.some(x => x.v === '' && x.r === 4 && x.c === 19), 'sense gel a la comanda -> S4 buidada (FESTA INICI)');
+check(w1.some(x => x.v === '' && x.r === 2 && x.c === 17), 'sense gel a la comanda -> cel·la Gel buidada (FESTA INICI)');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

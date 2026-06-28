@@ -99,6 +99,14 @@ const CONFIG = {
     telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 3 }
   },
 
+  // Cel·les que s'han de BUIDAR a cada fitxa (dades d'exemple de la plantilla
+  // que s'han d'omplir a mà). Es localitzen per etiqueta + offset, igual que
+  // PLANTILLA_CAMPS. Ex.: el telèfon del Satèl·lit (E17) ve d'exemple.
+  PLANTILLA_BUIDAR: [
+    { etiqueta: 'Satèl·lit', offsetCol: 2 }, // nom satèl·lit (D17)
+    { etiqueta: 'Satèl·lit', offsetCol: 3 }  // telèfon satèl·lit (E17)
+  ],
+
   // Capçaleres de les taules dins la plantilla (per localitzar-les soles).
   PLANTILLA_TAULA_BEGUDA:  'Beguda',   // capçalera de la columna de noms
   PLANTILLA_TAULA_MATERIAL:'Material', // capçalera de la taula de material

@@ -21,7 +21,10 @@ function makeSheet(name, values) {
     getDataRange() { return { getValues: () => this._values }; },
     getRange(r, c) {
       const self = this;
-      return { setValue(v) { self._writes.push({ r, c, v }); } };
+      return {
+        setValue(v) { self._writes.push({ r, c, v }); },
+        clearContent() { self._writes.push({ r, c, v: '' }); }
+      };
     },
     copyTo() { return makeSheet(this._name + ' copia', deepCopy(this._values)); }
   };
@@ -79,6 +82,7 @@ function plantillaValues() {
     ['', 'Dia', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Arribada beguda', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Resp. Imbecils', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['', 'Satèl·lit', '', 'NOMSAT', '618275590', '', '', '', '', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'Beguda', 'Demanat', 'Arribat', 'Observacions', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'BARRIL ESTRELLA DAMM 30L', '', '', '', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'CAIXA 35 AIGUA VERI 33CL', '', '', '', ''],
@@ -161,6 +165,8 @@ check(escritA('WHISKY', 12), 'WHISKY JB 1L -> WHISKY JB (mida) Demanat=12');
 check(w.some(x => String(x.v) === '12' && x.c === 16), 'Gasos=12 escrit a columna Gasos de Material');
 check(w.some(x => x.v === 'ADRIA' && x.r === 6 && x.c === 4), 'responsable (nom) escrit a D16 (offset +2)');
 check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telefon escrit a E16 (offset +3)');
+check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
+check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

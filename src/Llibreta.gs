@@ -82,6 +82,13 @@ function omplePlantilla_(full, barra, informe) {
     full.getRange(pos.row + 1, pos.col + 1 + spec.offsetCol).setValue(val);
   });
 
+  // --- 1b) Buidar cel·les amb dades d'exemple de la plantilla ---
+  (CONFIG.PLANTILLA_BUIDAR || []).forEach(function (spec) {
+    var pos = trobaEtiqueta_(values, spec.etiqueta);
+    if (!pos) return;
+    full.getRange(pos.row + 1, pos.col + 1 + spec.offsetCol).clearContent();
+  });
+
   // --- 2) Taula Beguda: omplir columna Demanat ---
   ompleTaulaBeguda_(full, values, barra, informe);
 

@@ -88,6 +88,7 @@ function plantillaValues() {
     ['', '', '', '', '', '', '', '', '', '', '', 'CAIXA 35 AIGUA VERI 33CL', '', '', '', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'PACK 6 COCA COLA 2L', '', '', '', ''],
     ['', '', '', '', '', '', '', '', '', '', '', 'WHISKY JB', '', '', '', ''],
+    ['', '', '', '', '', '', '', '', '', '', '', 'FANTA TARONJA', 99, '', '', ''],
   ];
 }
 
@@ -167,6 +168,9 @@ check(w.some(x => x.v === 'ADRIA' && x.r === 6 && x.c === 4), 'responsable (nom)
 check(w.some(x => String(x.v) === '627743675' && x.r === 6 && x.c === 5), 'telefon escrit a E16 (offset +3)');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 5), 'telèfon Satèl·lit (E17) es buida');
 check(w.some(x => x.v === '' && x.r === 7 && x.c === 4), 'nom Satèl·lit (D17) es buida');
+check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
+const w1 = creats[1]._writes;
+check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la comanda -> cel·la Gasos buidada (FESTA INICI)');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

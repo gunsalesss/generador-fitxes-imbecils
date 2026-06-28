@@ -117,11 +117,15 @@ function ompleTaulaBeguda_(full, values, barra, informe) {
   }
 
   // Index de files de producte de la plantilla per nom normalitzat.
+  // De pas, BUIDEM la cel·la Demanat de cada fila: així, si un producte no
+  // ve a la comanda (o no es mapeja), surt en blanc i no s'arrossega la
+  // quantitat d'exemple de la plantilla.
   var filesPlantilla = {}; // normProducte -> rowIndex
   for (var r = capBeguda.row + 1; r < values.length; r++) {
     var nom = cellText_(values, r, colNoms);
     if (nom === '') continue;
     filesPlantilla[normProducte_(nom)] = r;
+    full.getRange(r + 1, colDemanat + 1).clearContent();
   }
 
   barra.productes.forEach(function (p) {
@@ -156,9 +160,11 @@ function trobaPerInclusio_(filesPlantilla, key) {
   return undefined;
 }
 
-/** Escriu el valor de gasos a la cel·la Demanat de la columna Gasos (taula Material). */
+/**
+ * Escriu el gasos a la cel·la Demanat de la columna Gasos (taula Material).
+ * Si la barra no en porta, BUIDA la cel·la (no deixa l'exemple de la plantilla).
+ */
 function ompleGasos_(full, values, barra, informe) {
-  if (barra.header.gasos === undefined || barra.header.gasos === '') return;
   var capMaterial = trobaEtiqueta_(values, CONFIG.PLANTILLA_TAULA_MATERIAL);
   if (!capMaterial) return; // sense taula material, ho ignorem silenciosament
 
@@ -173,7 +179,13 @@ function ompleGasos_(full, values, barra, informe) {
     }
   }
   if (filaDemanat === -1) return;
-  full.getRange(filaDemanat + 1, colGasos + 1).setValue(barra.header.gasos);
+
+  var cel = full.getRange(filaDemanat + 1, colGasos + 1);
+  if (barra.header.gasos === undefined || barra.header.gasos === '') {
+    cel.clearContent();
+  } else {
+    cel.setValue(barra.header.gasos);
+  }
 }
 
 /** Busca a la fila `row` la columna la capçalera de la qual coincideix amb `etiqueta`. */

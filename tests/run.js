@@ -110,7 +110,7 @@ const DAMM_DISPLAY = [
   ['', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N', 'M', 'T', 'N'],
   ['PORXADA', '16h', '', '', '', '', '', '', '', '', '', '', ''],
   ['', '5', '2', '1', '', '', '', '12', '7', '10', '', '', ''],
-  ['', '', '', '', '', '', '', '4.00h', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', '', '', '', '', ''],
 ];
 const DAMM_VALUES = [
   ['', 'DV21', '', '', 'DS22', '', '', 'DG23', '', '', 'DLL24', '', ''],
@@ -191,9 +191,9 @@ check(dammP.dies.indexOf(23) !== -1, 'detecta el dia 23 (DG23)');
 const P = dammP.perPlaca['PORXADA'];
 check(P && P.q[23] && P.q[23].mostradors === 12 && P.q[23].tiradors === 7 && P.q[23].neveres === 10, 'PORXADA dia 23: M/T/N = 12/7/10');
 check(P && P.ent[21] === '16h', 'PORXADA: entrega "16h" el dia 21 (DV21)');
-check(P && P.rec[23] === '4.00h', 'PORXADA: recollida "4.00h" el dia 23');
+check(P && !P.rec[23], 'PORXADA: sense recollida (per provar el "No")');
 check(ctx.entregaAplicable_(P, 23) === '16h', 'entrega aplicable al dia 23 -> carry del 21 ("16h")');
-check(ctx.recollidaAplicable_(P, 21) === '4.00h', 'recollida aplicable al dia 21 -> carry cap al 23 ("4.00h")');
+check(ctx.recollidaAplicable_(P, 21) === '', 'recollida aplicable sense dades -> buit');
 const resOk = ctx.resolPlaceDamm_('PORXADA', dammP, 23);
 check(resOk.estat === 'ok' && resOk.place === 'PORXADA', 'resol PORXADA -> ok');
 const resNo = ctx.resolPlaceDamm_('LLOC INEXISTENT', dammP, 23);
@@ -258,7 +258,7 @@ check(w.some(x => x.v === 7 && x.r === 2 && x.c === 14), 'DAMM: Tiradors=7 a POR
 check(w.some(x => x.v === 10 && x.r === 2 && x.c === 15), 'DAMM: Neveres=10 a PORXADA (dia 23)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) segueix buit (no ve de DAMM)');
 check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 4), 'DAMM: hora entrega "16h" a Arribada material (col D)');
-check(w.some(x => x.v === '4.00h' && x.r === 15 && x.c === 4), 'DAMM: hora recollida "4.00h" a Recollida material (col D)');
+check(w.some(x => x.v === 'No' && x.r === 15 && x.c === 4), 'DAMM: sense recollida -> "No" a Recollida material');
 check(w.some(x => x.v === '15:00' && x.r === 5 && x.c === 4), 'Arribada beguda = HORA ENTREGA "15:00" (col D)');
 check(w.some(x => x.v === '04:00' && x.r === 16 && x.c === 4), 'Recollida beguda = HORA RECOLLIDA "04:00" (col D)');
 check(w.some(x => x.v === '' && x.r === 17 && x.c === 4), 'Grup 1 buit per defecte (treu "Elefant blanc")');

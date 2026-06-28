@@ -163,8 +163,10 @@ function ompleDamm_(full, values, barra, damm, informe) {
   }
 
   // Hores: entrega aplicable (dia <= D) i recollida aplicable (dia >= D).
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, entregaAplicable_(P, diaNum), 2);
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, recollidaAplicable_(P, diaNum), 2);
+  // Si la plaça és al DAMM però no n'hi ha, posa "No" (MATERIAL_SENSE_HORA).
+  var sense = CONFIG.MATERIAL_SENSE_HORA || '';
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, entregaAplicable_(P, diaNum) || sense, 2);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, recollidaAplicable_(P, diaNum) || sense, 2);
 }
 
 /** Escriu un valor a `offsetCol` cel·les de l'etiqueta, o la buida si no n'hi ha. */

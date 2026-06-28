@@ -37,6 +37,9 @@ const CONFIG = {
   // Etiquetes de la fitxa on van les hores del DAMM (esquerra de la fitxa).
   PLANTILLA_ARRIBADA_MATERIAL:  'Arribada material',
   PLANTILLA_RECOLLIDA_MATERIAL: 'Recollida material',
+  // Què posar a Arribada/Recollida material quan la plaça és al DAMM però no
+  // hi ha hora d'entrega/recollida aplicable. Deixa '' per buidar-ho.
+  MATERIAL_SENSE_HORA: 'No',
 
   // --- Document de DESTÍ: la Llibreta d'imbècils ---------------------------
   // Per defecte s'escriu a la MATEIXA Llibreta on viu aquest script.

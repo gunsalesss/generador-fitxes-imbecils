@@ -131,7 +131,7 @@ function omplePlantilla_(full, barra, informe, damm) {
  */
 function ompleDamm_(full, values, barra, damm, informe) {
   var diaNum = parseInt(diaDelMes_(barra.header.data), 10);
-  var res = resolPlaceDamm_(barra.header.lloc, damm.placesNorm);
+  var res = resolPlaceDamm_(barra.header.lloc, damm, diaNum);
   if (res.estat !== 'ok') {
     var detall = res.estat === 'ambigu'
       ? 'coincideix amb ' + res.opcions.join(' / ') + ' (afegeix-la a DAMM_EQUIV)'

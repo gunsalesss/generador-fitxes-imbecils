@@ -98,10 +98,13 @@ function recollidaAplicable_(P, dia) {
 
 /**
  * Resol la plaça d'una barra (LLOC de CODIBA) cap a la plaça del DAMM.
- * Prioritat: equivalència explícita -> coincidència exacta -> per inclusió.
+ * Prioritat: equivalència explícita -> exacta -> per inclusió. Si la inclusió
+ * dóna més d'una candidata (p. ex. "PORXADA" -> GRAN/OLIVERES), desempata per
+ * la que tingui dades (quantitats) per al dia concret de la barra.
  * Retorna { place: NORMPLACA|null, estat: 'ok'|'ambigu'|'no-trobat', opcions }.
  */
-function resolPlaceDamm_(lloc, placesNorm) {
+function resolPlaceDamm_(lloc, damm, diaNum) {
+  var placesNorm = damm.placesNorm;
   var n = norm_(lloc);
   var eq = CONFIG.DAMM_EQUIV[norm_(lloc)] || CONFIG.DAMM_EQUIV[lloc];
   if (eq) return { place: norm_(eq), estat: 'ok' };
@@ -110,6 +113,13 @@ function resolPlaceDamm_(lloc, placesNorm) {
     return p.indexOf(n) !== -1 || n.indexOf(p) !== -1;
   });
   if (matches.length === 1) return { place: matches[0], estat: 'ok' };
-  if (matches.length > 1) return { place: null, estat: 'ambigu', opcions: matches };
+  if (matches.length > 1) {
+    var ambDades = matches.filter(function (p) {
+      var P = damm.perPlaca[p];
+      return P && P.q[diaNum];
+    });
+    if (ambDades.length === 1) return { place: ambDades[0], estat: 'ok' };
+    return { place: null, estat: 'ambigu', opcions: matches };
+  }
   return { place: null, estat: 'no-trobat' };
 }

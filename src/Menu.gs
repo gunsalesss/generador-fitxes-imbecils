@@ -301,7 +301,7 @@ function diagnosticDammMatch() {
   linies.push('');
   parsed.barres.slice(0, 8).forEach(function (b) {
     var diaNum = parseInt(diaDelMes_(b.header.data), 10);
-    var res = resolPlaceDamm_(b.header.lloc, damm.placesNorm);
+    var res = resolPlaceDamm_(b.header.lloc, damm, diaNum);
     var P = res.place ? damm.perPlaca[res.place] : null;
     var q = (P && P.q[diaNum]) || null;
     var ent = P ? entregaAplicable_(P, diaNum) : '';

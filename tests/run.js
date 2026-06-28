@@ -194,10 +194,20 @@ check(P && P.ent[21] === '16h', 'PORXADA: entrega "16h" el dia 21 (DV21)');
 check(P && P.rec[23] === '4.00h', 'PORXADA: recollida "4.00h" el dia 23');
 check(ctx.entregaAplicable_(P, 23) === '16h', 'entrega aplicable al dia 23 -> carry del 21 ("16h")');
 check(ctx.recollidaAplicable_(P, 21) === '4.00h', 'recollida aplicable al dia 21 -> carry cap al 23 ("4.00h")');
-const resOk = ctx.resolPlaceDamm_('PORXADA', dammP.placesNorm);
+const resOk = ctx.resolPlaceDamm_('PORXADA', dammP, 23);
 check(resOk.estat === 'ok' && resOk.place === 'PORXADA', 'resol PORXADA -> ok');
-const resNo = ctx.resolPlaceDamm_('LLOC INEXISTENT', dammP.placesNorm);
+const resNo = ctx.resolPlaceDamm_('LLOC INEXISTENT', dammP, 23);
 check(resNo.estat === 'no-trobat', 'plaça inexistent -> no-trobat');
+// Desempat per dia quan hi ha dues candidates (GRAN/OLIVERES).
+const fakeDamm = {
+  placesNorm: ['PORXADA (GRAN)', 'PORXADA (OLIVERES)'],
+  perPlaca: {
+    'PORXADA (GRAN)': { q: { 23: {}, 28: {} }, ent: {}, rec: {} },
+    'PORXADA (OLIVERES)': { q: { 28: {} }, ent: {}, rec: {} }
+  }
+};
+check(ctx.resolPlaceDamm_('PORXADA', fakeDamm, 23).place === 'PORXADA (GRAN)', 'PORXADA dia 23 -> GRAN (única amb dades)');
+check(ctx.resolPlaceDamm_('PORXADA', fakeDamm, 28).estat === 'ambigu', 'PORXADA dia 28 -> ambigu (totes dues amb dades)');
 
 console.log('\n== Generació + emparellament de begudes ==');
 // Stub d'Active Spreadsheet amb plantilla i recollida de fulls creats.

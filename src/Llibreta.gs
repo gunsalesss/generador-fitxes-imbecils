@@ -87,7 +87,15 @@ function esProtegida_(nom) {
 function omplePlantilla_(full, barra, informe, damm) {
   var values = full.getDataRange().getValues();
 
-  // --- 1) Camps solts (per etiqueta + offset) ---
+  // --- 1) Buidar cel·les amb dades d'exemple ABANS d'omplir, perquè el que no
+  //        tingui dada quedi en blanc (no s'arrossega l'exemple de la plantilla).
+  (CONFIG.PLANTILLA_BUIDAR || []).forEach(function (spec) {
+    var pos = trobaEtiqueta_(values, spec.etiqueta);
+    if (!pos) return;
+    full.getRange(pos.row + 1, pos.col + 1 + spec.offsetCol).clearContent();
+  });
+
+  // --- 2) Camps solts (per etiqueta + offset) ---
   Object.keys(CONFIG.PLANTILLA_CAMPS).forEach(function (camp) {
     var spec = CONFIG.PLANTILLA_CAMPS[camp];
     var val = barra.header[camp];
@@ -101,14 +109,7 @@ function omplePlantilla_(full, barra, informe, damm) {
     full.getRange(pos.row + 1, pos.col + 1 + spec.offsetCol).setValue(val);
   });
 
-  // --- 1b) Buidar cel·les amb dades d'exemple de la plantilla ---
-  (CONFIG.PLANTILLA_BUIDAR || []).forEach(function (spec) {
-    var pos = trobaEtiqueta_(values, spec.etiqueta);
-    if (!pos) return;
-    full.getRange(pos.row + 1, pos.col + 1 + spec.offsetCol).clearContent();
-  });
-
-  // --- 2) Taula Beguda: omplir columna Demanat ---
+  // --- 3) Taula Beguda: omplir columna Demanat ---
   ompleTaulaBeguda_(full, values, barra, informe);
 
   // --- 3) Gasos a la taula Material ---

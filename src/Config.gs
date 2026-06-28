@@ -121,8 +121,12 @@ const CONFIG = {
   // que s'han d'omplir a mà). Es localitzen per etiqueta + offset, igual que
   // PLANTILLA_CAMPS. Ex.: el telèfon del Satèl·lit (E17) ve d'exemple.
   PLANTILLA_BUIDAR: [
-    { etiqueta: 'Satèl·lit', offsetCol: 2 }, // nom satèl·lit (D17)
-    { etiqueta: 'Satèl·lit', offsetCol: 3 }  // telèfon satèl·lit (E17)
+    { etiqueta: 'Satèl·lit', offsetCol: 2 },          // nom satèl·lit (D17)
+    { etiqueta: 'Satèl·lit', offsetCol: 3 },          // telèfon satèl·lit (E17)
+    { etiqueta: 'Arribada material', offsetCol: 1 },  // s'omple del DAMM si n'hi ha
+    { etiqueta: 'Recollida material', offsetCol: 1 }, // s'omple del DAMM si n'hi ha
+    { etiqueta: 'Arribada beguda', offsetCol: 1 },    // s'omple de l'HORA ENTREGA
+    { etiqueta: 'Recollida beguda', offsetCol: 1 }    // sense font: sempre buit
   ],
 
   // --- Gel: va a la taula Material, no a la de begudes ---------------------

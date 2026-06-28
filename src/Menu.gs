@@ -10,13 +10,16 @@ function onOpen() {
     .createMenu('🍺 Imbècils')
     .addItem('Generar fitxes des de CODIBA', 'generarFitxes')
     .addSeparator()
+    .addItem('🔍 Diagnòstic responsable', 'diagnosticResp')
     .addItem('Ajuda', 'mostraAjuda')
     .addToUi();
 }
 
+var PROP_CODIBA_URL_ = 'CODIBA_URL';
+
 /** Obté el link de la comanda (del Config o demanant-lo). '' si es cancel·la. */
 function obtenirUrlCodiba_(ui) {
-  var url = CONFIG.CODIBA_URL;
+  var url = linkRecordat();
   if (!url) {
     var resp = ui.prompt('Comanda CODIBA',
       'Enganxa el link de la comanda de CODIBA:', ui.ButtonSet.OK_CANCEL);
@@ -26,35 +29,34 @@ function obtenirUrlCodiba_(ui) {
   return url || '';
 }
 
-/** Botó principal: llegeix les colles disponibles i obre el diàleg de selecció. */
+/** Botó principal: obre el diàleg (link + selecció de colles). */
 function generarFitxes() {
-  var ui = SpreadsheetApp.getUi();
-  var url = obtenirUrlCodiba_(ui);
-  if (!url) { return; }
+  var html = HtmlService.createHtmlOutputFromFile('Dialog')
+    .setWidth(380).setHeight(440);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Generar fitxes');
+}
 
-  var colles;
-  try {
-    colles = getCollesDisponibles_(url);
-  } catch (e) {
-    ui.alert('Error', String(e.message || e), ui.ButtonSet.OK);
-    return;
-  }
-  if (!colles.length) {
-    ui.alert('No he trobat cap colla a la fila COLLA de la comanda.');
-    return;
-  }
+/** Últim link de comanda usat en aquest document (o el del Config, o buit). */
+function linkRecordat() {
+  var p = PropertiesService.getDocumentProperties().getProperty(PROP_CODIBA_URL_);
+  return p || CONFIG.CODIBA_URL || '';
+}
 
-  // Marca per defecte les que estiguin a CONFIG.COLLES_INCLOSES.
+/**
+ * Cridada des del diàleg: valida el link, el recorda i retorna les colles
+ * disponibles amb les marcades per defecte.
+ */
+function carregaColles(url) {
+  url = (url || '').trim();
+  if (!url) throw new Error('Cal enganxar el link de la comanda.');
+  var colles = getCollesDisponibles_(url);
+  if (!colles.length) throw new Error('No he trobat cap colla a la fila COLLA.');
+  PropertiesService.getDocumentProperties().setProperty(PROP_CODIBA_URL_, url);
+
   var perDefecte = (CONFIG.COLLES_INCLOSES || []).map(norm_);
-  var items = colles.map(function (c) {
+  return colles.map(function (c) {
     return { nom: c, checked: perDefecte.indexOf(norm_(c)) !== -1 };
   });
-
-  var t = HtmlService.createTemplateFromFile('Dialog');
-  t.url = url;
-  t.items = items;
-  var html = t.evaluate().setWidth(340).setHeight(60 + items.length * 34 + 110);
-  ui.showModalDialog(html, 'Generar fitxes');
 }
 
 /**
@@ -62,6 +64,7 @@ function generarFitxes() {
  * genera les fitxes i retorna el text de l'informe per mostrar al diàleg.
  */
 function executaGeneracio(url, collesSeleccionades) {
+  PropertiesService.getDocumentProperties().setProperty(PROP_CODIBA_URL_, (url || '').trim());
   var parsed = parseCodiba_(url, collesSeleccionades);
 
   // Seguretat: no escriure MAI dins de la pròpia comanda de CODIBA.
@@ -104,6 +107,63 @@ function textInforme_(parsed, informe) {
     linies.push('Tot correcte, sense incidències. 🎉');
   }
   return linies.join('\n');
+}
+
+/**
+ * Diagnòstic: mostra què llegeix de la comanda (responsable/telèfon) i com és
+ * la zona "Resp. Imbecils" de la plantilla, amb referències de cel·la. Serveix
+ * per ajustar els offsets sense endevinar.
+ */
+function diagnosticResp() {
+  var ui = SpreadsheetApp.getUi();
+  var url = obtenirUrlCodiba_(ui);
+  if (!url) return;
+
+  var linies = [];
+  try {
+    var totesColles = getCollesDisponibles_(url);
+    var parsed = parseCodiba_(url, totesColles);
+    var b = parsed.barres[0];
+    linies.push('— COMANDA (primera barra) —');
+    if (b) {
+      linies.push('lloc: ' + b.header.lloc);
+      linies.push('responsable: "' + b.header.responsable + '"');
+      linies.push('telefon: "' + b.header.telefon + '"');
+    } else {
+      linies.push('(cap barra)');
+    }
+  } catch (e) {
+    linies.push('Error llegint la comanda: ' + (e.message || e));
+  }
+
+  linies.push('');
+  linies.push('— PLANTILLA (zona Resp. Imbecils) —');
+  var plantilla = getSheetPerNom_(SpreadsheetApp.getActiveSpreadsheet(), CONFIG.PLANTILLA_SHEET);
+  if (!plantilla) {
+    linies.push('No trobo la plantilla "' + CONFIG.PLANTILLA_SHEET + '".');
+  } else {
+    var values = plantilla.getDataRange().getValues();
+    var pos = trobaEtiqueta_(values, CONFIG.PLANTILLA_CAMPS.responsable.etiqueta);
+    if (!pos) {
+      linies.push('No trobo l\'etiqueta "' + CONFIG.PLANTILLA_CAMPS.responsable.etiqueta + '".');
+    } else {
+      linies.push('"' + CONFIG.PLANTILLA_CAMPS.responsable.etiqueta + '" a '
+        + colLletra_(pos.col) + (pos.row + 1));
+      // Mostra les cel·les d'aquesta fila i la següent (Satèl·lit), amb contingut.
+      for (var dr = 0; dr <= 1; dr++) {
+        var r = pos.row + dr;
+        if (r >= values.length) continue;
+        for (var c = 0; c < values[r].length; c++) {
+          var v = values[r][c];
+          if (v !== '' && v !== null && v !== undefined) {
+            linies.push('  ' + colLletra_(c) + (r + 1) + ' = "' + v + '"');
+          }
+        }
+      }
+    }
+  }
+
+  ui.alert('Diagnòstic responsable', linies.join('\n'), ui.ButtonSet.OK);
 }
 
 function mostraAjuda() {

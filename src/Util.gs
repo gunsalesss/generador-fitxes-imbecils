@@ -58,6 +58,14 @@ function obreSpreadsheet_(urlOId) {
   }
 }
 
+/** Converteix un índex de columna 0-based a lletra (0->A, 26->AA). */
+function colLletra_(i) {
+  var s = '';
+  i = i + 1;
+  while (i > 0) { var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); }
+  return s;
+}
+
 /** Retorna la pestanya pel nom, provant variants normalitzades. */
 function getSheetPerNom_(ss, nom) {
   var exacte = ss.getSheetByName(nom);

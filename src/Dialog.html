@@ -9,6 +9,10 @@
     }
     h3 { margin: 0 0 4px; font-size: 15px; }
     .sub { color: #5f6368; font-size: 12px; margin-bottom: 12px; }
+    input[type=text] {
+      width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px;
+      border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 8px;
+    }
     label.colla {
       display: flex; align-items: center; gap: 8px;
       padding: 7px 10px; border: 1px solid #dadce0; border-radius: 8px;
@@ -22,33 +26,35 @@
     }
     button.primary { background: #1a73e8; color: #fff; border-color: #1a73e8; }
     button:disabled { opacity: .5; cursor: default; }
+    .msg { font-size: 12px; color: #5f6368; margin-top: 6px; }
+    .msg.err { color: #c5221f; }
+    #seccioColles { display: none; }
     #resultat {
       white-space: pre-wrap; background: #f8f9fa; border: 1px solid #e0e0e0;
       border-radius: 8px; padding: 10px; margin-top: 12px; font-size: 13px;
-      display: none; max-height: 220px; overflow: auto;
+      display: none; max-height: 200px; overflow: auto;
     }
-    #carregant { display: none; color: #5f6368; margin-top: 10px; font-size: 13px; }
   </style>
 </head>
 <body>
-  <input type="hidden" id="url" value="<?= url ?>">
-
   <div id="form">
-    <h3>Quines colles vols generar?</h3>
-    <div class="sub">Es crearà/regenerarà una fitxa per cada barra de les colles marcades. Les pestanyes protegides no es toquen.</div>
+    <h3>1. Link de la comanda CODIBA</h3>
+    <div class="sub">Enganxa l'enllaç del document de comanda. Es recordarà per a la pròxima vegada.</div>
+    <input type="text" id="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+    <div class="actions" style="margin-top:4px">
+      <button class="primary" id="btnCarrega" onclick="carrega()">Carregar colles</button>
+    </div>
+    <div class="msg" id="msgLink"></div>
 
-    <? for (var i = 0; i < items.length; i++) { ?>
-      <label class="colla">
-        <input type="checkbox" class="chk" value="<?= items[i].nom ?>" <?= items[i].checked ? 'checked' : '' ?>>
-        <span><?= items[i].nom ?></span>
-      </label>
-    <? } ?>
-
-    <div id="carregant">Generant fitxes… no tanquis la finestra.</div>
-
-    <div class="actions">
-      <button onclick="google.script.host.close()">Cancel·lar</button>
-      <button class="primary" id="btnGenera" onclick="generar()">Generar</button>
+    <div id="seccioColles">
+      <h3 style="margin-top:16px">2. Quines colles vols generar?</h3>
+      <div class="sub">Es crearà/regenerarà una fitxa per barra de les colles marcades. Les pestanyes protegides no es toquen.</div>
+      <div id="llistaColles"></div>
+      <div class="msg" id="msgGen"></div>
+      <div class="actions">
+        <button onclick="google.script.host.close()">Cancel·lar</button>
+        <button class="primary" id="btnGenera" onclick="generar()">Generar</button>
+      </div>
     </div>
   </div>
 
@@ -58,30 +64,72 @@
   </div>
 
   <script>
+    // Prefill amb l'últim link usat.
+    google.script.run.withSuccessHandler(function (url) {
+      if (url) document.getElementById('url').value = url;
+    }).linkRecordat();
+
+    function setMsg(id, text, isErr) {
+      var el = document.getElementById(id);
+      el.textContent = text || '';
+      el.className = 'msg' + (isErr ? ' err' : '');
+    }
+
+    function carrega() {
+      var url = document.getElementById('url').value.trim();
+      if (!url) { setMsg('msgLink', 'Cal enganxar el link.', true); return; }
+      document.getElementById('btnCarrega').disabled = true;
+      setMsg('msgLink', 'Llegint la comanda…', false);
+
+      google.script.run
+        .withSuccessHandler(function (items) {
+          document.getElementById('btnCarrega').disabled = false;
+          setMsg('msgLink', '');
+          pintaColles(items);
+        })
+        .withFailureHandler(function (err) {
+          document.getElementById('btnCarrega').disabled = false;
+          setMsg('msgLink', err.message, true);
+        })
+        .carregaColles(url);
+    }
+
+    function pintaColles(items) {
+      var cont = document.getElementById('llistaColles');
+      cont.innerHTML = '';
+      items.forEach(function (it) {
+        var lab = document.createElement('label');
+        lab.className = 'colla';
+        var chk = document.createElement('input');
+        chk.type = 'checkbox'; chk.className = 'chk'; chk.value = it.nom;
+        chk.checked = !!it.checked;
+        var span = document.createElement('span');
+        span.textContent = it.nom;
+        lab.appendChild(chk); lab.appendChild(span);
+        cont.appendChild(lab);
+      });
+      document.getElementById('seccioColles').style.display = 'block';
+    }
+
     function generar() {
-      var seleccionades = Array.prototype.slice
+      var sel = Array.prototype.slice
         .call(document.querySelectorAll('.chk:checked'))
         .map(function (c) { return c.value; });
-
-      if (!seleccionades.length) {
-        alert('Marca almenys una colla.');
-        return;
-      }
+      if (!sel.length) { setMsg('msgGen', 'Marca almenys una colla.', true); return; }
 
       document.getElementById('btnGenera').disabled = true;
-      document.getElementById('carregant').style.display = 'block';
+      setMsg('msgGen', 'Generant fitxes… no tanquis la finestra.', false);
 
       google.script.run
         .withSuccessHandler(function (text) { mostraResultat(text); })
         .withFailureHandler(function (err) { mostraResultat('❌ Error:\n' + err.message); })
-        .executaGeneracio(document.getElementById('url').value, seleccionades);
+        .executaGeneracio(document.getElementById('url').value.trim(), sel);
     }
 
     function mostraResultat(text) {
       document.getElementById('form').style.display = 'none';
       var r = document.getElementById('resultat');
-      r.textContent = text;
-      r.style.display = 'block';
+      r.textContent = text; r.style.display = 'block';
       document.getElementById('accionsFinal').style.display = 'flex';
     }
   </script>

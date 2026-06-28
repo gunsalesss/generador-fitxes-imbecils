@@ -108,15 +108,15 @@ const CONFIG = {
   // capLlibreta -> { etiqueta: text a buscar, offsetCol: cap a on escriure }
   // offsetCol = 1 vol dir "escriu a la cel·la de la dreta de l'etiqueta".
   PLANTILLA_CAMPS: {
+    // Fila de dalt (Bolo/Ubicació/Dia): etiqueta i valor de costat -> offset 1.
     acte:        { etiqueta: 'Bolo',          offsetCol: 1 },
     lloc:        { etiqueta: 'Ubicació',      offsetCol: 1 },
     dia:         { etiqueta: 'Dia',           offsetCol: 1 },
-    horaEntrega: { etiqueta: 'Arribada beguda', offsetCol: 1 },
-    // "Resp. Imbecils" està a B16 (fusionada B:C). El nom va a D16 (+2) i el
-    // telèfon a E16 (+3).
-    responsable: { etiqueta: 'Resp. Imbecils', offsetCol: 2 },
-    telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 3 },
-    horaRecollida: { etiqueta: 'Recollida beguda', offsetCol: 1 }
+    // Caixes de l'esquerra: etiqueta a col B (fusionada B:C), valor a col D -> +2.
+    horaEntrega: { etiqueta: 'Arribada beguda', offsetCol: 2 },
+    horaRecollida: { etiqueta: 'Recollida beguda', offsetCol: 2 },
+    responsable: { etiqueta: 'Resp. Imbecils', offsetCol: 2 }, // nom (col D)
+    telefon:     { etiqueta: 'Resp. Imbecils', offsetCol: 3 }  // telèfon (col E)
   },
 
   // Cel·les que s'han de BUIDAR a cada fitxa (dades d'exemple de la plantilla
@@ -125,12 +125,11 @@ const CONFIG = {
   PLANTILLA_BUIDAR: [
     { etiqueta: 'Satèl·lit', offsetCol: 2 },          // nom satèl·lit (D17)
     { etiqueta: 'Satèl·lit', offsetCol: 3 },          // telèfon satèl·lit (E17)
-    { etiqueta: 'Arribada material', offsetCol: 1 },  // s'omple del DAMM si n'hi ha
-    { etiqueta: 'Recollida material', offsetCol: 1 }, // s'omple del DAMM si n'hi ha
-    { etiqueta: 'Arribada beguda', offsetCol: 1 },    // s'omple de l'HORA ENTREGA
-    { etiqueta: 'Recollida beguda', offsetCol: 1 },   // s'omple de l'HORA RECOLLIDA
-    { etiqueta: 'Grup 1', offsetCol: 1 },             // treu l'exemple ("Elefant blanc")
-    { etiqueta: 'Grup 1', offsetCol: 2 }
+    { etiqueta: 'Arribada material', offsetCol: 2 },  // s'omple del DAMM si n'hi ha
+    { etiqueta: 'Recollida material', offsetCol: 2 }, // s'omple del DAMM si n'hi ha
+    { etiqueta: 'Arribada beguda', offsetCol: 2 },    // s'omple de l'HORA ENTREGA
+    { etiqueta: 'Recollida beguda', offsetCol: 2 },   // s'omple de l'HORA RECOLLIDA
+    { etiqueta: 'Grup 1', offsetCol: 2 }              // treu l'exemple ("Elefant blanc")
   ],
 
   // --- Gel: va a la taula Material, no a la de begudes ---------------------

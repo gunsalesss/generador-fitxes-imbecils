@@ -160,16 +160,16 @@ function ompleDamm_(full, values, barra, damm, informe) {
     }
   }
 
-  // Hores a Arribada / Recollida material (esquerra de la fitxa).
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, dades.entrega);
-  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, dades.recollida);
+  // Hores a Arribada / Recollida material (caixa esquerra: valor a +2).
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_ARRIBADA_MATERIAL, dades.entrega, 2);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_RECOLLIDA_MATERIAL, dades.recollida, 2);
 }
 
-/** Escriu un valor a la dreta d'una etiqueta, o la buida si no n'hi ha. */
-function escriuOBuida_(full, values, etiqueta, valor) {
+/** Escriu un valor a `offsetCol` cel·les de l'etiqueta, o la buida si no n'hi ha. */
+function escriuOBuida_(full, values, etiqueta, valor, offsetCol) {
   var pos = trobaEtiqueta_(values, etiqueta);
   if (!pos) return;
-  var cel = full.getRange(pos.row + 1, pos.col + 2);
+  var cel = full.getRange(pos.row + 1, pos.col + 1 + offsetCol);
   if (valor) cel.setValue(valor);
   else cel.clearContent();
 }

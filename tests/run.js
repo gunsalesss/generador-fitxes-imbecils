@@ -140,7 +140,7 @@ function plantillaValues() {
     ['', '', '', '', '', '', '', '', '', '', '', 'FANTA TARONJA', 99, '', '', ''],
     ['', 'Arribada material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Recollida material', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-    ['', 'Recollida beguda', 'EXEMPLE', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ['', 'Recollida beguda', '', 'EXEMPLE', '', '', '', '', '', '', '', '', '', '', '', ''],
     ['', 'Grup 1', '', 'Elefant blanc', '', '', '', '', '', '', '', '', '', '', '', ''],
   ];
 }
@@ -242,10 +242,10 @@ check(w.some(x => x.v === 12 && x.r === 2 && x.c === 13), 'DAMM: Mostradors=12 a
 check(w.some(x => x.v === 7 && x.r === 2 && x.c === 14), 'DAMM: Tiradors=7 a PORXADA (dia 23)');
 check(w.some(x => x.v === 10 && x.r === 2 && x.c === 15), 'DAMM: Neveres=10 a PORXADA (dia 23)');
 check(w.some(x => x.v === '' && x.r === 2 && x.c === 18), 'Tirador CST (h) segueix buit (no ve de DAMM)');
-check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 3), 'DAMM: hora entrega "16h" a Arribada material');
-check(w.some(x => x.v === '4.00h' && x.r === 15 && x.c === 3), 'DAMM: hora recollida "4.00h" a Recollida material');
-check(w.some(x => x.v === '15:00' && x.r === 5 && x.c === 3), 'Arribada beguda = HORA ENTREGA "15:00"');
-check(w.some(x => x.v === '04:00' && x.r === 16 && x.c === 3), 'Recollida beguda = HORA RECOLLIDA "04:00"');
+check(w.some(x => x.v === '16h' && x.r === 14 && x.c === 4), 'DAMM: hora entrega "16h" a Arribada material (col D)');
+check(w.some(x => x.v === '4.00h' && x.r === 15 && x.c === 4), 'DAMM: hora recollida "4.00h" a Recollida material (col D)');
+check(w.some(x => x.v === '15:00' && x.r === 5 && x.c === 4), 'Arribada beguda = HORA ENTREGA "15:00" (col D)');
+check(w.some(x => x.v === '04:00' && x.r === 16 && x.c === 4), 'Recollida beguda = HORA RECOLLIDA "04:00" (col D)');
 check(w.some(x => x.v === '' && x.r === 17 && x.c === 4), 'Grup 1 buit per defecte (treu "Elefant blanc")');
 check(!w.some(x => x.v === 'GEL 20KG'), 'el gel NO s\'afegeix a la taula Beguda');
 check(w.some(x => x.v === '' && x.r === 13 && x.c === 13), 'producte d\'exemple no demanat (FANTA TARONJA=99) es buida');
@@ -258,8 +258,8 @@ check(w1.some(x => x.v === '' && x.r === 2 && x.c === 16), 'gasos buit a la coma
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 17), 'sense gel a la comanda -> cel·la Gel buidada (FESTA INICI)');
 check(w1.some(x => x.v === '' && x.r === 2 && x.c === 13), 'plaça no trobada al DAMM -> Mostradors queda buit (FESTA INICI)');
 check((informe.avisos || []).some(a => /DAMM.*FESTA INICI/.test(a)), 'avisa que la plaça FESTA INICI no és al DAMM');
-check(w1.some(x => x.v === '' && x.r === 14 && x.c === 3), 'sense DAMM per la plaça -> Arribada material buida (FESTA INICI)');
-check(!w1.some(x => x.v && x.r === 14 && x.c === 3), 'Arribada material no s\'omple si no hi ha dada DAMM (FESTA INICI)');
+check(w1.some(x => x.v === '' && x.r === 14 && x.c === 4), 'sense DAMM per la plaça -> Arribada material buida (FESTA INICI)');
+check(!w1.some(x => x.v && x.r === 14 && x.c === 4), 'Arribada material no s\'omple si no hi ha dada DAMM (FESTA INICI)');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);

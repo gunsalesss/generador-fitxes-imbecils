@@ -98,9 +98,9 @@ Tot el que es pot necessitar tocar és a [`src/Config.gs`](src/Config.gs):
 
 ```
 generador-fitxes-imbecils/
-  appsscript.json        # manifest del projecte Apps Script (scopes, timezone)
-  .clasp.json.example    # plantilla de config de clasp
-  src/
+  .clasp.json.example    # plantilla de config de clasp (rootDir: src)
+  src/                   # arrel que puja clasp (fitxers sense prefix)
+    appsscript.json      # manifest del projecte Apps Script (scopes, timezone)
     Config.gs            # ⚙️ configuració editable (l'únic que cal tocar)
     Util.gs              # normalització de text i cerca per etiquetes
     Codiba.gs            # parser de la comanda de CODIBA

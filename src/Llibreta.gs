@@ -143,6 +143,7 @@ function ompleBarres_(full, values, barra, barres2026, informe) {
   escriuOBuida_(full, values, CONFIG.PLANTILLA_HORARI, res.row.durada, 1);
   escriuOBuida_(full, values, CONFIG.PLANTILLA_GRUP1, res.row.grup1, 2);
   escriuOBuida_(full, values, CONFIG.PLANTILLA_GRUP2, res.row.grup2, 2);
+  escriuOBuida_(full, values, CONFIG.PLANTILLA_SATELLIT, res.row.satellit, 2);
 }
 
 /**

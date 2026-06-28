@@ -43,9 +43,10 @@ const CONFIG = {
 
   // --- Pestanya "Barres 2026" (dins la Llibreta): horari i grups -----------
   BARRES_SHEET: 'Barres 2026',
-  PLANTILLA_HORARI: 'Horari',  // a la fitxa, valor a +1 (fila de dalt)
-  PLANTILLA_GRUP1:  'Grup 1',  // valor a +2 (caixa esquerra)
-  PLANTILLA_GRUP2:  'Grup 2',  // valor a +2
+  PLANTILLA_HORARI: 'Horari',     // a la fitxa, valor a +1 (fila de dalt)
+  PLANTILLA_GRUP1:  'Grup 1',     // valor a +2 (caixa esquerra)
+  PLANTILLA_GRUP2:  'Grup 2',     // valor a +2
+  PLANTILLA_SATELLIT: 'Satèl·lit',// nom del satèl·lit (col J de Barres), valor a +2
 
   // --- Document de DESTÍ: la Llibreta d'imbècils ---------------------------
   // Per defecte s'escriu a la MATEIXA Llibreta on viu aquest script.

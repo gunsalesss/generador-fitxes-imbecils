@@ -297,6 +297,7 @@ check(rb.row.grup1 === 'Salsa Blanca' && rb.row.grup2 === 'Junta', 'grups correc
 check(w.some(x => x.v === '23:00 - 03:00' && x.r === 19 && x.c === 3), 'Barres: Horari (Durada) a la fitxa');
 check(w.some(x => x.v === 'Salsa Blanca' && x.r === 17 && x.c === 4), 'Barres: Grup 1 a la fitxa');
 check(w.some(x => x.v === 'Junta' && x.r === 18 && x.c === 4), 'Barres: Grup 2 a la fitxa');
+check(w.some(x => x.v === 'Sergi' && x.r === 7 && x.c === 4), 'Barres: Satèl·lit (col J) a la fitxa');
 
 console.log('\n----------------------------------------');
 console.log(`Resultat: ${pass} OK, ${fail} KO`);
